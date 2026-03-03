@@ -13,7 +13,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noUncheckedSideEffectImports": true,
-    "types": ["vite/client"],
+    "types": ["node", "vite/client"],
 
     /* Emit */
     "noEmit": true,

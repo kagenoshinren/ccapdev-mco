@@ -3,7 +3,7 @@
 
   "ignorePatterns": ["dist/**", "node_modules/**", "src/route-tree.gen.ts"],
 
-  "env": { "builtin": true, "browser": true, "es2022": true },
+  "env": { "builtin": true, "browser": true, "node": true, "es2022": true },
 
   "plugins": ["eslint", "typescript", "unicorn", "oxc", "import", "node", "promise"],
   "categories": { "correctness": "error", "suspicious": "warn", "pedantic": "warn", "perf": "warn", "style": "warn" },
@@ -33,6 +33,7 @@
       }
     ],
     "typescript/no-empty-object-type": ["error", { "allowInterfaces": "with-single-extends" }],
+    "unicorn/prefer-node-protocol": "error",
 
     /* Style */
     "eslint/func-names": ["warn", "as-needed", { "generators": "as-needed" }],
@@ -76,11 +77,7 @@
   "overrides": [
     {
       "files": ["*.config.[jt]s"],
-      "env": { "node": true },
       "rules": {
-        /* Restriction */
-        "unicorn/prefer-node-protocol": "error",
-
         /* Style */
         "import/no-anonymous-default-export": ["warn", { "allowObject": true }]
       }

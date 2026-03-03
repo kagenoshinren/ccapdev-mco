@@ -1,10 +1,13 @@
-import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import { devtools } from "@tanstack/devtools-vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [
-    tanstackRouter({ target: "react", generatedRouteTree: "./src/route-tree.gen.ts", autoCodeSplitting: true }),
+    devtools(),
+    tanstackStart({ router: { generatedRouteTree: "./route-tree.gen.ts" } }),
     react({ babel: { plugins: ["babel-plugin-react-compiler"] } }),
   ],
+  ssr: { noExternal: ["@mantine/*"] },
 });
