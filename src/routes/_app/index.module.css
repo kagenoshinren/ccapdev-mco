@@ -72,7 +72,6 @@
 
 .sectionDescription {
   margin: auto;
-  max-width: 600px;
 
   &::after {
     background-color: var(--mantine-color-pink-filled);
