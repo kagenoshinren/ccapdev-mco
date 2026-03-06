@@ -18,6 +18,13 @@ import { IconCheck, IconArrowRight } from "@tabler/icons-react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { LinkButton } from "../../components/link-button.tsx";
+import heroBg from "../../assets/backgrounds/hero-bg.svg";
+import statsTexture from "../../assets/backgrounds/stats-texture.svg";
+import ctaPattern from "../../assets/backgrounds/cta-pattern.svg";
+import aboutIllustration from "../../assets/features/about-illustration.svg";
+import step1Browse from "../../assets/features/step-1-browse.svg";
+import step2Reserve from "../../assets/features/step-2-reserve.svg";
+import step3Rate from "../../assets/features/step-3-rate.svg";
 import { CAROUSEL_FEATURES, FEATURES } from "../../data/features.ts";
 import { STATS } from "../../data/stats.ts";
 
@@ -25,10 +32,12 @@ import styles from "./index.module.css";
 
 export const Route = createFileRoute("/_app/")({ component: LandingPage });
 
+const STEP_IMAGES = [step1Browse, step2Reserve, step3Rate];
+
 function LandingPage() {
   return (
     <>
-      <div className={styles.heroSection}>
+      <div className={styles.heroSection} style={{ backgroundImage: `linear-gradient(160deg, rgba(255,240,246,0.85) 0%, rgba(250,250,250,0.85) 50%, rgba(243,229,245,0.85) 100%), url(${heroBg})`, backgroundSize: "cover", backgroundPosition: "center" }}>
         <Container size="lg">
           <div className={styles.heroContainer}>
             <div className={styles.heroContent}>
@@ -90,7 +99,8 @@ function LandingPage() {
                 {CAROUSEL_FEATURES.map((slide) => (
                   <Carousel.Slide key={slide.title}>
                     <Card h="100%" p="xl" radius="md" style={{ background: slide.background }}>
-                      <Stack justify="center" h="100%" gap="md">
+                      <Stack justify="center" align="center" h="100%" gap="md">
+                        <img src={slide.image} alt={slide.title} style={{ maxHeight: 120, objectFit: "contain" }} />
                         <Title order={2}>{slide.title}</Title>
                         <Text c="dimmed" size="md">
                           {slide.description}
@@ -115,7 +125,7 @@ function LandingPage() {
       </div>
 
       <Container size="lg" mt={-40} mb="xl" style={{ position: "relative", zIndex: 1 }}>
-        <div className={styles.statisticsBar}>
+        <div className={styles.statisticsBar} style={{ backgroundImage: `url(${statsTexture})`, backgroundSize: "cover", backgroundBlendMode: "overlay" }}>
           {STATS.map((stat) => (
             <div key={stat.label} className={styles.statisticItem}>
               <Text className={styles.statisticCount}>{stat.value}</Text>
@@ -137,6 +147,7 @@ function LandingPage() {
         <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xl" mt={50}>
           {["Browse & Discover", "Reserve & Engage", "Rate & Connect"].map((title, i) => (
             <Card key={title} shadow="md" radius="md" className={styles.stepCard} padding="xl">
+              <img src={STEP_IMAGES[i]} alt={title} style={{ width: 120, height: 120, objectFit: "contain", margin: "0 auto", display: "block" }} />
               <div className={styles.stepNumber}>{i + 1}</div>
               <Text ta="center" fz="lg" fw={500} mt="sm">
                 {title}
@@ -177,7 +188,8 @@ function LandingPage() {
                 component={Link}
                 to={feature.to}
               >
-                <feature.iconComponent size={rem(50)} stroke={1.5} color={`var(--mantine-color-${feature.color}-6)`} />
+                <img src={feature.image} alt={feature.title} style={{ width: "100%", height: 140, objectFit: "contain", marginBottom: "var(--mantine-spacing-sm)" }} />
+                <feature.iconComponent size={rem(28)} stroke={1.5} color={`var(--mantine-color-${feature.color}-6)`} />
                 <Text fz="lg" fw={500} className={styles.featureCardTitle} mt="md">
                   {feature.title}
                 </Text>
@@ -193,9 +205,7 @@ function LandingPage() {
       <Container size="lg" py={80}>
         <div className={styles.aboutContainer}>
           <div className={styles.aboutImagePlaceholder}>
-            <Text size="4rem" fw={900} c="pink" style={{ opacity: 0.3 }}>
-              A.
-            </Text>
+            <img src={aboutIllustration} alt="About Adormable" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 24 }} />
           </div>
 
           <div className={styles.aboutContent}>
@@ -239,11 +249,11 @@ function LandingPage() {
       </Container>
 
       <Container size="lg" pb={80}>
-        <div className={styles.callToActionBanner}>
-          <Title order={2} c="white" mb="md">
+        <div className={styles.callToActionBanner} style={{ backgroundImage: `url(${ctaPattern})`, backgroundSize: "cover", backgroundBlendMode: "soft-light" }}>
+          <Title order={2} c="black" mb="md">
             Ready to Make Dorm Life Better?
           </Title>
-          <Text c="white" maw={500} mx="auto" mb="xl" style={{ opacity: 0.9 }}>
+          <Text c="black" maw={500} mx="auto" mb="xl" style={{ opacity: 0.9 }}>
             Join hundreds of residents already using Adormable to reserve study spots, connect with neighbors, and
             discover local gems.
           </Text>
@@ -254,7 +264,7 @@ function LandingPage() {
               </Button>
             </Link>
             <Link to="/guide">
-              <Button size="lg" variant="outline" radius="xl" style={{ borderColor: "white", color: "white" }}>
+              <Button size="lg" variant="outline" radius="xl" style={{ borderColor: "black", color: "black" }}>
                 Browse Directory
               </Button>
             </Link>

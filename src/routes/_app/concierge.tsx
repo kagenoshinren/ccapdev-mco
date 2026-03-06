@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Container,
   Title,
   Text,
@@ -14,6 +15,8 @@ import {
 } from "@mantine/core";
 import { IconTrash, IconPlus } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
+
+import defaultConcierge from "../../assets/avatars/default-concierge.svg";
 
 const expiredBookings = [
   { id: "b1", student: "Carlos Lim", zone: "Main Hall – Seat 5", time: "10:00 AM – 12:00 PM", status: "No-Show" },
@@ -31,9 +34,10 @@ export const Route = createFileRoute("/_app/concierge")({
 function ConciergeDashboardPage() {
   return (
     <Container size="lg" py="xl">
-      <Title className="page-title" mb="xs">
-        Concierge Dashboard
-      </Title>
+      <Group gap="md" mb="xs">
+        <Avatar src={defaultConcierge} alt="Concierge" size={48} radius="xl" />
+        <Title className="page-title">Concierge Dashboard</Title>
+      </Group>
       <Text c="dimmed" className="page-description" mb="xl">
         Manage walk-in bookings and handle no-show reservations.
       </Text>

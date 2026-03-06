@@ -17,6 +17,7 @@ import type { ReactNode } from "react";
 import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from "@mantine/core";
 import { createRootRoute, HeadContent } from "@tanstack/react-router";
 
+import adormableIcon from "../assets/logos/adormable-icon.png";
 import { theme } from "../theme.ts";
 
 export const Route = createRootRoute({
@@ -38,6 +39,7 @@ function RootComponent({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
         <ColorSchemeScript forceColorScheme="light" />
+        <link rel="icon" href={adormableIcon} type="image/png" />
       </head>
       <body>
         <MantineProvider theme={theme} forceColorScheme="light">

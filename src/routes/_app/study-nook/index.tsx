@@ -16,13 +16,21 @@ import { IconSearch } from "@tabler/icons-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
+import emptyState from "../../../assets/features/empty-state.svg";
+import computerLab from "../../../assets/study-nook/computer-lab.svg";
+import groupStudy from "../../../assets/study-nook/group-study.svg";
+import mainHall from "../../../assets/study-nook/main-hall.svg";
+import quietRoomA from "../../../assets/study-nook/quiet-room-a.svg";
+import quietRoomB from "../../../assets/study-nook/quiet-room-b.svg";
+import readingRoom from "../../../assets/study-nook/reading-room.svg";
+
 const zones = [
-  { id: "main-hall", name: "Main Hall", capacity: 40, available: 12, status: "Open" },
-  { id: "quiet-room-a", name: "Quiet Room A", capacity: 10, available: 3, status: "Open" },
-  { id: "quiet-room-b", name: "Quiet Room B", capacity: 10, available: 0, status: "Full" },
-  { id: "group-study", name: "Group Study Room", capacity: 20, available: 8, status: "Open" },
-  { id: "computer-lab", name: "Computer Lab", capacity: 30, available: 15, status: "Open" },
-  { id: "reading-room", name: "Reading Room", capacity: 15, available: 0, status: "Full" },
+  { id: "main-hall", name: "Main Hall", capacity: 40, available: 12, status: "Open", image: mainHall },
+  { id: "quiet-room-a", name: "Quiet Room A", capacity: 10, available: 3, status: "Open", image: quietRoomA },
+  { id: "quiet-room-b", name: "Quiet Room B", capacity: 10, available: 0, status: "Full", image: quietRoomB },
+  { id: "group-study", name: "Group Study Room", capacity: 20, available: 8, status: "Open", image: groupStudy },
+  { id: "computer-lab", name: "Computer Lab", capacity: 30, available: 15, status: "Open", image: computerLab },
+  { id: "reading-room", name: "Reading Room", capacity: 15, available: 0, status: "Full", image: readingRoom },
 ];
 
 export const Route = createFileRoute("/_app/study-nook/")({
@@ -56,11 +64,19 @@ function ZoneSelectionPage() {
         <Select placeholder="Filter by availability" data={["All", "Open", "Full"]} defaultValue="All" />
       </Group>
 
+      {filtered.length === 0 && (
+        <Stack align="center" py="xl">
+          <img src={emptyState} alt="No results found" style={{ width: 200, height: 200, objectFit: "contain" }} />
+          <Text c="dimmed" ta="center">No zones match your search.</Text>
+        </Stack>
+      )}
+
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
         {filtered.map((zone) => {
           const pct = ((zone.capacity - zone.available) / zone.capacity) * 100;
           return (
             <Card key={zone.id} shadow="md" padding="lg" radius="md" className="content-card">
+              <img src={zone.image} alt={zone.name} style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: "var(--mantine-radius-sm)", marginBottom: "var(--mantine-spacing-sm)" }} />
               <Stack gap="sm">
                 <Group justify="space-between">
                   <Text fw={600} size="lg">

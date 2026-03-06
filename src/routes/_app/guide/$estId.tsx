@@ -17,6 +17,9 @@ import {
 import { IconThumbUp, IconPhoto } from "@tabler/icons-react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import cafeManila from "../../../assets/establishments/1-cafe-manila.svg";
+import catCoffeeShop from "../../../assets/establishments/cat-coffee-shop.svg";
+
 const establishment = {
   name: "Café Manila",
   category: "Coffee Shop",
@@ -24,6 +27,8 @@ const establishment = {
   totalReviews: 32,
   description:
     "Cozy café with great drip coffee and pastries. Perfect for late-night study sessions. Open from 7 AM to 11 PM daily.",
+  image: cafeManila,
+  categoryIcon: catCoffeeShop,
 };
 
 const reviews = [
@@ -69,11 +74,12 @@ function EstablishmentDetailsPage() {
       </Link>
 
       <Paper shadow="md" p="lg" radius="md" className="content-card" mb="lg">
+        <img src={establishment.image} alt={establishment.name} style={{ width: "100%", height: 240, objectFit: "cover", borderRadius: "var(--mantine-radius-sm)", marginBottom: "var(--mantine-spacing-md)" }} />
         <Group justify="space-between" wrap="wrap">
           <Stack gap="xs">
             <Group>
               <Title order={2}>{establishment.name}</Title>
-              <Badge variant="light" size="lg">
+              <Badge variant="light" size="lg" leftSection={<img src={establishment.categoryIcon} alt="" width={16} height={16} />}>
                 {establishment.category}
               </Badge>
             </Group>

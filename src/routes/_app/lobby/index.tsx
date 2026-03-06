@@ -16,7 +16,9 @@ import { IconSearch, IconArrowUp, IconPlus } from "@tabler/icons-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { TAG_COLORS } from "../../../features/lobby/lobby.constants.ts";
+import { TAG_COLORS, TAG_ICONS } from "../../../features/lobby/lobby.constants.ts";
+import emptyState from "../../../assets/features/empty-state.svg";
+import threadPlaceholder from "../../../assets/lobby/thread-placeholder.svg";
 
 const posts = [
   {
@@ -99,6 +101,13 @@ function ForumFeedPage() {
         <Select placeholder="Sort by" data={["Newest", "Most Popular"]} defaultValue="Newest" />
       </Group>
 
+      {filtered.length === 0 && (
+        <Stack align="center" py="xl">
+          <img src={emptyState} alt="No results found" style={{ width: 200, height: 200, objectFit: "contain" }} />
+          <Text c="dimmed" ta="center">No posts match your search.</Text>
+        </Stack>
+      )}
+
       <Stack>
         {filtered.map((post) => (
           <Card
@@ -111,6 +120,7 @@ function ForumFeedPage() {
             to={`/lobby/${post.id}`}
             style={{ textDecoration: "none", color: "inherit" }}
           >
+            <img src={threadPlaceholder} alt="" style={{ width: "100%", height: 100, objectFit: "cover", borderRadius: "var(--mantine-radius-sm)", marginBottom: "var(--mantine-spacing-sm)" }} />
             <Group justify="space-between" wrap="wrap">
               <Group>
                 <Avatar color="pink" radius="xl">
@@ -122,7 +132,7 @@ function ForumFeedPage() {
                 <Stack gap={2}>
                   <Group gap="xs">
                     <Text fw={600}>{post.title}</Text>
-                    <Badge color={TAG_COLORS[post.tag]} size="sm" variant="light">
+                    <Badge color={TAG_COLORS[post.tag]} size="sm" variant="light" leftSection={TAG_ICONS[post.tag] ? <img src={TAG_ICONS[post.tag]} alt="" width={12} height={12} /> : undefined}>
                       {post.tag}
                     </Badge>
                   </Group>

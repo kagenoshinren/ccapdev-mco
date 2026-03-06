@@ -15,6 +15,8 @@ import {
 import { IconEdit, IconTrash, IconPlus, IconSearch } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 
+import placeholder from "../../../assets/establishments/placeholder.svg";
+
 const establishments = [
   { id: "1", name: "Café Manila", category: "Coffee Shop", owner: "cafe_manila_owner", status: "Active" },
   { id: "2", name: "Kuya's Carinderia", category: "Filipino Food", owner: "—", status: "Active" },
@@ -96,6 +98,7 @@ function EstablishmentManagerPage() {
         <Title order={4} mb="md">
           Add New Establishment
         </Title>
+        <img src={placeholder} alt="Preview" style={{ width: "100%", maxWidth: 300, height: 180, objectFit: "cover", borderRadius: "var(--mantine-radius-sm)", marginBottom: "var(--mantine-spacing-md)" }} />
         <Stack>
           <Group grow>
             <TextInput label="Name" placeholder="Establishment name" />

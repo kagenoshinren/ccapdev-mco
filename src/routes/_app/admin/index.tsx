@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Container,
   Title,
   Text,
@@ -24,6 +25,7 @@ import {
 import { createFileRoute } from "@tanstack/react-router";
 
 import { UserRole } from "../../../contexts/auth-context.tsx";
+import defaultAdmin from "../../../assets/avatars/default-admin.svg";
 import { ROLE_COLORS } from "../../../features/admin/admin.constants.ts";
 
 const stats = [
@@ -48,9 +50,10 @@ export const Route = createFileRoute("/_app/admin/")({
 function AdminControlPanelPage() {
   return (
     <Container size="lg" py="xl">
-      <Title className="page-title" mb="xs">
-        Admin Control Panel
-      </Title>
+      <Group gap="md" mb="xs">
+        <Avatar src={defaultAdmin} alt="Admin" size={48} radius="xl" />
+        <Title className="page-title">Admin Control Panel</Title>
+      </Group>
       <Text c="dimmed" className="page-description" mb="xl">
         System overview and user management.
       </Text>

@@ -17,6 +17,8 @@ import {
 import { IconUser, IconCalendar, IconHistory, IconEdit, IconTrash, IconCamera } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 
+import defaultAvatarFemale from "../../assets/avatars/default-avatar-female.svg";
+
 const reservations = [
   { zone: "Quiet Room A", date: "Feb 10, 2026", time: "2:00 PM – 4:00 PM", status: "Confirmed" },
   { zone: "Main Hall – Seat 12", date: "Feb 12, 2026", time: "10:00 AM – 12:00 PM", status: "Pending" },
@@ -43,9 +45,7 @@ function UserProfilePage() {
       <Paper shadow="md" p="lg" radius="md" className="content-card" mb="xl">
         <Group wrap="wrap">
           <Stack align="center">
-            <Avatar size={100} radius="xl" color="pink">
-              MS
-            </Avatar>
+            <Avatar size={100} radius="xl" src={defaultAvatarFemale} alt="Maria Santos" />
             <Button variant="light" color="pink" size="xs" leftSection={<IconCamera size={14} />}>
               Change Photo
             </Button>

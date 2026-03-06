@@ -15,6 +15,27 @@ import { IconSearch } from "@tabler/icons-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
+import cafeManila from "../../../assets/establishments/1-cafe-manila.svg";
+import kuyasCarinderia from "../../../assets/establishments/2-kuyas-carinderia.svg";
+import quickPrints from "../../../assets/establishments/3-quick-prints.svg";
+import samgyupCorner from "../../../assets/establishments/4-samgyup-corner.svg";
+import laundryExpress from "../../../assets/establishments/5-laundry-express.svg";
+import sevenElevenTaft from "../../../assets/establishments/6-7-eleven-taft.svg";
+import catCoffeeShop from "../../../assets/establishments/cat-coffee-shop.svg";
+import catConvenienceStore from "../../../assets/establishments/cat-convenience-store.svg";
+import catFilipinoFood from "../../../assets/establishments/cat-filipino-food.svg";
+import catKoreanBbq from "../../../assets/establishments/cat-korean-bbq.svg";
+import catServices from "../../../assets/establishments/cat-services.svg";
+import emptyState from "../../../assets/features/empty-state.svg";
+
+const CATEGORY_ICONS: Record<string, string> = {
+  "Coffee Shop": catCoffeeShop,
+  "Filipino Food": catFilipinoFood,
+  Services: catServices,
+  "Korean BBQ": catKoreanBbq,
+  "Convenience Store": catConvenienceStore,
+};
+
 const establishments = [
   {
     id: "1",
@@ -23,6 +44,7 @@ const establishments = [
     rating: 4.5,
     reviews: 32,
     description: "Cozy café with great drip coffee and pastries.",
+    image: cafeManila,
   },
   {
     id: "2",
@@ -31,6 +53,7 @@ const establishments = [
     rating: 4.2,
     reviews: 48,
     description: "Affordable and authentic Filipino dishes, just 2 minutes away.",
+    image: kuyasCarinderia,
   },
   {
     id: "3",
@@ -39,6 +62,7 @@ const establishments = [
     rating: 3.8,
     reviews: 15,
     description: "Fast printing and photocopy services, open late.",
+    image: quickPrints,
   },
   {
     id: "4",
@@ -47,6 +71,7 @@ const establishments = [
     rating: 4.7,
     reviews: 61,
     description: "Unlimited samgyeopsal near the dorm. Student-friendly prices.",
+    image: samgyupCorner,
   },
   {
     id: "5",
@@ -55,6 +80,7 @@ const establishments = [
     rating: 3.5,
     reviews: 22,
     description: "Drop-off laundry service with same-day pickup available.",
+    image: laundryExpress,
   },
   {
     id: "6",
@@ -63,6 +89,7 @@ const establishments = [
     rating: 3.9,
     reviews: 10,
     description: "24/7 convenience store right next to the dorm entrance.",
+    image: sevenElevenTaft,
   },
 ];
 
@@ -96,15 +123,23 @@ function DirectoryListPage() {
         size="md"
       />
 
+      {filtered.length === 0 && (
+        <Stack align="center" py="xl">
+          <img src={emptyState} alt="No results found" style={{ width: 200, height: 200, objectFit: "contain" }} />
+          <Text c="dimmed" ta="center">No establishments match your search.</Text>
+        </Stack>
+      )}
+
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
         {filtered.map((est) => (
           <Card key={est.id} shadow="md" padding="lg" radius="md" className="content-card">
+            <img src={est.image} alt={est.name} style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: "var(--mantine-radius-sm)", marginBottom: "var(--mantine-spacing-sm)" }} />
             <Stack gap="sm">
               <Group justify="space-between">
                 <Text fw={700} size="lg">
                   {est.name}
                 </Text>
-                <Badge variant="light">{est.category}</Badge>
+                <Badge variant="light" leftSection={CATEGORY_ICONS[est.category] ? <img src={CATEGORY_ICONS[est.category]} alt="" width={14} height={14} /> : undefined}>{est.category}</Badge>
               </Group>
               <Text size="sm" c="dimmed" lineClamp={2}>
                 {est.description}
