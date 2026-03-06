@@ -29,35 +29,14 @@ export const Route = createFileRoute("/login")({
       throw redirect({ to: "/dashboard" });
     }
   },
+  head: () => ({ meta: [{ title: "Login | Adormable" }] }),
   component: LoginPage,
 });
 
 function LoginPage() {
-  const router = useRouter();
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const form = useForm({
-    initialValues: { email: "", password: "" },
-    validate: {
-      email: (v) => (/^\S+@\S+\.\S+$/.test(v) ? null : "Invalid email"),
-      password: (v) => (v.length < 1 ? "Password is required" : null),
-    },
-  });
-
-  const handleSubmit = async (values: typeof form.values) => {
-    setError("");
-    setLoading(true);
-    const { error: authError } = await authClient.signIn.email({ email: values.email, password: values.password });
-    setLoading(false);
-
-    if (authError) {
-      setError(authError.message ?? "Invalid email or password");
-      return;
-    }
-
-    void router.navigate({ to: "/dashboard" });
-  };
+  const { register } = Route.useSearch();
+  const [isRegister, setIsRegister] = useState(register === "true");
+  const { login } = useAuth();
 
   return (
     <div className={styles.page}>
