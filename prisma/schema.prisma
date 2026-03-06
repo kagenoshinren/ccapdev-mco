@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -83,7 +82,7 @@ model Verification {
   @@map("verification")
 }
 
-// ── Domain models ────────────────────────────────────────────────────────────
+// Domain models
 
 model StudyZone {
   id           String        @id @map("_id")
