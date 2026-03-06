@@ -26,7 +26,7 @@ jobs:
         run: pnpm install
 
       - name: Run lint checks
-        run: pnpm lint
+        run: pnpm lint --format=github
 
   format-check:
     runs-on: ubuntu-latest
