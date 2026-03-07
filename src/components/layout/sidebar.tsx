@@ -24,7 +24,7 @@ export function Sidebar({ isOpen, onToggle }: Readonly<SidebarProps>) {
       opened={isOpen}
       onClose={onToggle}
       size="xs"
-      title={<img src={adormableLogo} alt="Adormable" height={28} />}
+      title={<img src={adormableLogo} alt="Adormable" height={36} />}
     >
       <Stack gap={0}>
         {NAV_ITEMS[isLoggedIn ? "auth" : "guest"].map((item) => (

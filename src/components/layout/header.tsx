@@ -39,7 +39,7 @@ export function Header({ isBurgerOpen, onSidebarToggle }: Readonly<HeaderProps>)
             aria-label="Toggle navigation"
           />
           <Link to="/" style={{ textDecoration: "none" }}>
-            <img src={adormableLogo} alt="Adormable" height={36} style={{ display: "block" }} />
+            <img src={adormableLogo} alt="Adormable" height={44} style={{ display: "block" }} />
           </Link>
         </Group>
 

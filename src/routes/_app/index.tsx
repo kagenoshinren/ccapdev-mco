@@ -16,8 +16,6 @@ import {
 } from "@mantine/core";
 import { IconCheck, IconArrowRight } from "@tabler/icons-react";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import Autoplay from "embla-carousel-autoplay";
-import { useRef } from "react";
 
 import ctaPattern from "../../assets/backgrounds/cta-pattern.svg";
 import heroBg from "../../assets/backgrounds/hero-bg.svg";
@@ -38,8 +36,6 @@ export const Route = createFileRoute("/_app/")({ component: LandingPage });
 const STEP_IMAGES = [step1Browse, step2Reserve, step3Rate];
 
 function LandingPage() {
-  const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: true }));
-
   return (
     <>
       <div
@@ -72,7 +68,7 @@ function LandingPage() {
                 size="sm"
                 icon={
                   <ThemeIcon size={20} radius="xl" color="pink">
-                    <IconCheck size={rem(12)} stroke={1.5} />
+                    <IconCheck size={rem("12px")} stroke={1.5} />
                   </ThemeIcon>
                 }
               >
@@ -111,8 +107,7 @@ function LandingPage() {
                 withIndicators
                 height={380}
                 slideGap="md"
-                loop
-                plugins={[autoplay.current]}
+                emblaOptions={{ loop: true }}
                 classNames={{ indicator: styles.carouselIndicator }}
               >
                 {CAROUSEL_FEATURES.map((slide) => (
@@ -219,7 +214,7 @@ function LandingPage() {
                 <img src={feature.image} alt={feature.title} className={imgStyles.cardImageContained} />
                 <Group gap="xs" mt="md">
                   <feature.iconComponent
-                    size={rem(24)}
+                    size={rem("24px")}
                     stroke={1.5}
                     color={`var(--mantine-color-${feature.color}-6)`}
                   />
@@ -263,7 +258,7 @@ function LandingPage() {
               size="sm"
               icon={
                 <ThemeIcon size={20} radius="xl" color="pink">
-                  <IconCheck size={rem(12)} stroke={1.5} />
+                  <IconCheck size={rem("12px")} stroke={1.5} />
                 </ThemeIcon>
               }
             >
