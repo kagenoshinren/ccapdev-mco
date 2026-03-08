@@ -1,16 +1,16 @@
-import { Container, Text, Card, Group, Stack, Avatar, Badge, Button, ActionIcon } from "@mantine/core";
-import { IconArrowUp, IconPlus } from "@tabler/icons-react";
+import { Container, Text, Card, Group, Stack, Avatar, Badge, ActionIcon, Chip } from "@mantine/core";
+import { IconArrowUp, IconPlus, IconMessageCircle } from "@tabler/icons-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 import emptyState from "../../../assets/features/empty-state.svg";
-import threadPlaceholder from "../../../assets/lobby/thread-placeholder.svg";
 import { EmptyState } from "../../../components/empty-state.tsx";
+import { LinkButton } from "../../../components/link-button.tsx";
 import { SearchBar } from "../../../components/search-bar.tsx";
 import { SectionHeader } from "../../../components/section-header.tsx";
-import { TAG_COLORS, TAG_ICONS } from "../../../features/lobby/lobby.constants.ts";
+import { TAG_COLORS } from "../../../features/lobby/lobby.constants.ts";
 
-import imgStyles from "../../../components/shared-images.module.css";
+import styles from "./lobby.module.css";
 
 const posts = [
   {
@@ -56,6 +56,8 @@ const posts = [
   },
 ] as const;
 
+const ALL_TAGS = ["All", "Discussion", "Issue", "Event", "Lost & Found"] as const;
+
 export const Route = createFileRoute("/_app/lobby/")({
   head: () => ({ meta: [{ title: "Lobby | Adormable" }] }),
   component: ForumFeedPage,
@@ -63,11 +65,14 @@ export const Route = createFileRoute("/_app/lobby/")({
 
 function ForumFeedPage() {
   const [search, setSearch] = useState("");
+  const [activeTag, setActiveTag] = useState<string>("All");
 
-  const filtered = posts.filter(
-    (p) =>
-      p.title.toLowerCase().includes(search.toLowerCase()) || p.snippet.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = posts.filter((p) => {
+    const matchesSearch =
+      p.title.toLowerCase().includes(search.toLowerCase()) || p.snippet.toLowerCase().includes(search.toLowerCase());
+    const matchesTag = activeTag === "All" || p.tag === activeTag;
+    return matchesSearch && matchesTag;
+  });
 
   return (
     <Container size="md" py="xl">
@@ -78,9 +83,9 @@ function ForumFeedPage() {
           color="grape"
           mb="xs"
         />
-        <Button leftSection={<IconPlus size={16} />} color="grape" radius="xl">
+        <LinkButton leftSection={<IconPlus size={16} />} color="grape" radius="xl" to="/lobby">
           New Post
-        </Button>
+        </LinkButton>
       </Group>
 
       <SearchBar
@@ -93,65 +98,75 @@ function ForumFeedPage() {
         onFilterChange={() => {}}
       />
 
+      <Chip.Group
+        value={activeTag}
+        onChange={(v) => {
+          setActiveTag(v as string);
+        }}
+      >
+        <Group gap="xs" mb="lg">
+          {ALL_TAGS.map((tag) => (
+            <Chip key={tag} value={tag} variant="light" color={tag === "All" ? "gray" : TAG_COLORS[tag]} size="sm">
+              {tag}
+            </Chip>
+          ))}
+        </Group>
+      </Chip.Group>
+
       {filtered.length === 0 && <EmptyState image={emptyState} message="No posts match your search." />}
 
       <Stack>
         {filtered.map((post) => (
           <Card
             key={post.id}
-            shadow="md"
-            padding="lg"
+            shadow="sm"
+            padding="md"
             radius="md"
-            className="content-card"
+            className={styles.postCard}
             component={Link}
             to={`/lobby/${post.id}`}
-            style={{ textDecoration: "none", color: "inherit" }}
           >
-            <img src={threadPlaceholder} alt="" className={imgStyles.cardImageShort} />
-            <Group justify="space-between" wrap="wrap">
-              <Group>
-                <Avatar color="pink" radius="xl">
-                  {post.author
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </Avatar>
-                <Stack gap={2}>
-                  <Group gap="xs">
-                    <Text fw={600}>{post.title}</Text>
-                    <Badge
-                      color={TAG_COLORS[post.tag]}
-                      size="sm"
-                      variant="light"
-                      leftSection={
-                        TAG_ICONS[post.tag] ? (
-                          <img src={TAG_ICONS[post.tag]} alt="" width={12} height={12} />
-                        ) : undefined
-                      }
-                    >
-                      {post.tag}
-                    </Badge>
-                  </Group>
+            <Group wrap="nowrap" gap="md">
+              <Stack align="center" gap={2} className={styles.voteColumn}>
+                <ActionIcon variant="subtle" color="grape" size="sm" aria-label="Upvote">
+                  <IconArrowUp size={16} />
+                </ActionIcon>
+                <Text size="sm" fw={700} c="grape">
+                  {post.upvotes}
+                </Text>
+              </Stack>
+
+              <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
+                <Group gap="xs" wrap="nowrap">
+                  <Avatar color="grape" radius="xl" size="sm">
+                    {post.author
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </Avatar>
                   <Text size="xs" c="dimmed">
                     {post.author} · {post.time}
                   </Text>
-                </Stack>
-              </Group>
-              <Group gap="xs">
-                <ActionIcon variant="light" color="pink" size="sm">
-                  <IconArrowUp size={14} />
-                </ActionIcon>
-                <Text size="sm" fw={600}>
-                  {post.upvotes}
+                </Group>
+                <Group gap="xs" wrap="nowrap">
+                  <Text fw={600} size="sm" lineClamp={1}>
+                    {post.title}
+                  </Text>
+                  <Badge color={TAG_COLORS[post.tag]} size="xs" variant="light" style={{ flexShrink: 0 }}>
+                    {post.tag}
+                  </Badge>
+                </Group>
+                <Text size="xs" c="dimmed" lineClamp={1}>
+                  {post.snippet}
                 </Text>
-                <Text size="xs" c="dimmed">
-                  · {post.comments} replies
-                </Text>
-              </Group>
+                <Group gap="xs">
+                  <IconMessageCircle size={12} color="var(--mantine-color-dimmed)" />
+                  <Text size="xs" c="dimmed">
+                    {post.comments} replies
+                  </Text>
+                </Group>
+              </Stack>
             </Group>
-            <Text size="sm" c="dimmed" mt="sm" lineClamp={2}>
-              {post.snippet}
-            </Text>
           </Card>
         ))}
       </Stack>

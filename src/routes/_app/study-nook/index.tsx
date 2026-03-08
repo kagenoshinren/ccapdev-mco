@@ -65,7 +65,6 @@ function ZoneSelectionPage() {
                   {zone.available} / {zone.capacity} seats available
                 </Text>
                 {/* oxlint-disable-next-line unicorn/no-nested-ternary */}
-                {/* oxlint-disable-next-line unicorn/no-nested-ternary */}
                 <Progress
                   value={pct}
                   color={pct > HIGH_OCCUPANCY_PCT ? "red" : pct > MED_OCCUPANCY_PCT ? "yellow" : "green"}

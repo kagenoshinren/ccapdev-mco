@@ -1,4 +1,4 @@
-import { Container, Text, Card, SimpleGrid, Group, Stack, Rating, Badge, Button } from "@mantine/core";
+import { Container, Text, Card, SimpleGrid, Group, Stack, Rating, Badge, Button, Chip } from "@mantine/core";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -19,6 +19,7 @@ import { SearchBar } from "../../../components/search-bar.tsx";
 import { SectionHeader } from "../../../components/section-header.tsx";
 
 import imgStyles from "../../../components/shared-images.module.css";
+import styles from "./guide.module.css";
 
 const CATEGORY_ICONS: Record<string, string> = {
   "Coffee Shop": catCoffeeShop,
@@ -27,6 +28,16 @@ const CATEGORY_ICONS: Record<string, string> = {
   "Korean BBQ": catKoreanBbq,
   "Convenience Store": catConvenienceStore,
 };
+
+const CATEGORY_COLORS: Record<string, string> = {
+  "Coffee Shop": "orange",
+  "Filipino Food": "red",
+  Services: "blue",
+  "Korean BBQ": "pink",
+  "Convenience Store": "cyan",
+};
+
+const ALL_CATEGORIES = ["All", "Coffee Shop", "Filipino Food", "Services", "Korean BBQ", "Convenience Store"] as const;
 
 const establishments = [
   {
@@ -92,8 +103,13 @@ export const Route = createFileRoute("/_app/guide/")({
 
 function DirectoryListPage() {
   const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string>("All");
 
-  const filtered = establishments.filter((e) => e.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = establishments.filter((e) => {
+    const matchesSearch = e.name.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = activeCategory === "All" || e.category === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <Container size="lg" py="xl">
@@ -105,11 +121,26 @@ function DirectoryListPage() {
 
       <SearchBar searchValue={search} onSearchChange={setSearch} searchPlaceholder="Search establishments by name..." />
 
+      <Chip.Group
+        value={activeCategory}
+        onChange={(v) => {
+          setActiveCategory(v as string);
+        }}
+      >
+        <Group gap="xs" mb="lg">
+          {ALL_CATEGORIES.map((cat) => (
+            <Chip key={cat} value={cat} variant="light" color={cat === "All" ? "gray" : CATEGORY_COLORS[cat]} size="sm">
+              {cat}
+            </Chip>
+          ))}
+        </Group>
+      </Chip.Group>
+
       {filtered.length === 0 && <EmptyState image={emptyState} message="No establishments match your search." />}
 
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
         {filtered.map((est) => (
-          <Card key={est.id} shadow="md" padding="lg" radius="md" className="content-card">
+          <Card key={est.id} shadow="md" padding="lg" radius="md" className={styles.estCard}>
             <img src={est.image} alt={est.name} className={imgStyles.cardImage} />
             <Stack gap="sm">
               <Group justify="space-between">
@@ -118,6 +149,7 @@ function DirectoryListPage() {
                 </Text>
                 <Badge
                   variant="light"
+                  color={CATEGORY_COLORS[est.category]}
                   leftSection={
                     CATEGORY_ICONS[est.category] ? (
                       <img src={CATEGORY_ICONS[est.category]} alt="" width={14} height={14} />

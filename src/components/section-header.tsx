@@ -15,7 +15,7 @@ interface SectionHeaderProps {
 export function SectionHeader({ title, description, order = 1, color = "pink", mb = "xl" }: SectionHeaderProps) {
   return (
     <div style={{ marginBottom: `var(--mantine-spacing-${mb})` }}>
-      <Title order={order} className={styles.title} mb={description != null ? "xs" : 0}>
+      <Title order={order} className={styles.title} mb={description == null ? 0 : "xs"}>
         {title}
       </Title>
       {description != null && (

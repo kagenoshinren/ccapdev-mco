@@ -19,6 +19,7 @@ import placeholder from "../../../assets/establishments/placeholder.svg";
 import { SectionHeader } from "../../../components/section-header.tsx";
 
 import imgStyles from "../../../components/shared-images.module.css";
+import styles from "./admin.module.css";
 
 const establishments = [
   { id: "1", name: "Café Manila", category: "Coffee Shop", owner: "cafe_manila_owner", status: "Active" },
@@ -61,7 +62,7 @@ function EstablishmentManagerPage() {
           </Table.Thead>
           <Table.Tbody>
             {establishments.map((est) => (
-              <Table.Tr key={est.id}>
+              <Table.Tr key={est.id} className={styles.tableRow}>
                 <Table.Td fw={500}>{est.name}</Table.Td>
                 <Table.Td>
                   <Badge variant="light" size="sm">

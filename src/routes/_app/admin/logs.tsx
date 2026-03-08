@@ -4,6 +4,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { SectionHeader } from "../../../components/section-header.tsx";
 
+import styles from "./admin.module.css";
+
 const activityLogs = [
   {
     id: "l1",
@@ -105,7 +107,7 @@ function SystemLogsPage() {
               </Table.Thead>
               <Table.Tbody>
                 {activityLogs.map((log) => (
-                  <Table.Tr key={log.id}>
+                  <Table.Tr key={log.id} className={styles.tableRow}>
                     <Table.Td>
                       <Text size="sm" c="dimmed" ff="monospace">
                         {log.timestamp}
@@ -148,7 +150,7 @@ function SystemLogsPage() {
               </Table.Thead>
               <Table.Tbody>
                 {errorLogs.map((log) => (
-                  <Table.Tr key={log.id}>
+                  <Table.Tr key={log.id} className={styles.tableRow}>
                     <Table.Td>
                       <Text size="sm" c="dimmed" ff="monospace">
                         {log.timestamp}

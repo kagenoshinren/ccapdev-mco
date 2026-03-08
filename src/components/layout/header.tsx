@@ -22,8 +22,11 @@ export function Header({ isBurgerOpen, onSidebarToggle }: Readonly<HeaderProps>)
   const isStaff = role === UserRole.CONCIERGE || role === UserRole.ADMIN;
   const isAdmin = role === UserRole.ADMIN;
   let avatarSrc = defaultAvatarFemale;
-  if (role === UserRole.ADMIN) avatarSrc = defaultAdmin;
-  else if (role === UserRole.CONCIERGE) avatarSrc = defaultConcierge;
+  if (role === UserRole.ADMIN) {
+    avatarSrc = defaultAdmin;
+  } else if (role === UserRole.CONCIERGE) {
+    avatarSrc = defaultConcierge;
+  }
 
   const location = useLocation();
 

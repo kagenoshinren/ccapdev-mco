@@ -28,6 +28,8 @@ import { StatCard } from "../../../components/stat-card.tsx";
 import { UserRole } from "../../../contexts/auth-context.tsx";
 import { ROLE_COLORS } from "../../../features/admin/admin.constants.ts";
 
+import styles from "./admin.module.css";
+
 const stats = [
   { label: "Total Users", value: "1,247", icon: IconUsers, color: "pink" },
   { label: "Active Reservations", value: "89", icon: IconBook, color: "teal" },
@@ -84,7 +86,7 @@ function AdminControlPanelPage() {
           </Table.Thead>
           <Table.Tbody>
             {users.map((user) => (
-              <Table.Tr key={user.id}>
+              <Table.Tr key={user.id} className={styles.tableRow}>
                 <Table.Td fw={500}>{user.name}</Table.Td>
                 <Table.Td>
                   <Text size="sm" c="dimmed">
@@ -122,7 +124,7 @@ function AdminControlPanelPage() {
           Site Diagnostics
         </Title>
         <SimpleGrid cols={{ base: 1, sm: 3 }}>
-          <Paper bg="green.0" p="md" radius="md">
+          <Paper bg="green.0" p="md" radius="md" className={styles.diagnosticCard}>
             <Text size="sm" fw={600}>
               API Status
             </Text>
@@ -130,7 +132,7 @@ function AdminControlPanelPage() {
               Operational
             </Badge>
           </Paper>
-          <Paper bg="green.0" p="md" radius="md">
+          <Paper bg="green.0" p="md" radius="md" className={styles.diagnosticCard}>
             <Text size="sm" fw={600}>
               Database
             </Text>
@@ -138,7 +140,7 @@ function AdminControlPanelPage() {
               Connected
             </Badge>
           </Paper>
-          <Paper bg="yellow.0" p="md" radius="md">
+          <Paper bg="yellow.0" p="md" radius="md" className={styles.diagnosticCard}>
             <Text size="sm" fw={600}>
               Storage
             </Text>
