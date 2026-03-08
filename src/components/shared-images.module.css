@@ -39,12 +39,6 @@
   display: block;
 }
 
-.carouselImage {
-  max-height: 150px;
-  object-fit: contain;
-  border-radius: var(--mantine-radius-md);
-}
-
 .aboutImage {
   width: 100%;
   height: 100%;

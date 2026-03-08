@@ -9,7 +9,6 @@ import "@fontsource/quicksand/500.css";
 import "@fontsource/quicksand/600.css";
 import "@fontsource/quicksand/700.css";
 import "@mantine/core/styles.css";
-import "@mantine/carousel/styles.css";
 import "../globals.css";
 
 import type { ReactNode } from "react";

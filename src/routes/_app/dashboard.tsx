@@ -20,6 +20,9 @@ import { QUICK_ACTIONS } from "../../features/dashboard/data/quick-actions.ts";
 
 import styles from "./dashboard.module.css";
 
+const QUICK_ACTION_ICON_BOX = rem(50);
+const QUICK_ACTION_ICON_SIZE = rem(26);
+
 const upcomingReservations = [
   { zone: "Quiet Room A", date: "Feb 10, 2026", time: "2:00 PM - 4:00 PM", status: "Confirmed" },
   { zone: "Main Hall - Seat 12", date: "Feb 12, 2026", time: "10:00 AM - 12:00 PM", status: "Pending" },
@@ -56,8 +59,8 @@ function DashboardPage() {
             component={Link}
             to={action.to}
           >
-            <ThemeIcon size={rem(50)} radius="md" variant="light" color={action.color} mb="md">
-              <action.iconComponent size={rem(26)} stroke={1.5} />
+            <ThemeIcon size={QUICK_ACTION_ICON_BOX} radius="md" variant="light" color={action.color} mb="md">
+              <action.iconComponent size={QUICK_ACTION_ICON_SIZE} stroke={1.5} />
             </ThemeIcon>
             <Text fz="lg" fw={500}>
               {action.title}
@@ -74,8 +77,8 @@ function DashboardPage() {
         <Text className={styles.sectionTitle}>My Upcoming Reservations</Text>
       </Group>
       <Stack gap="sm">
-        {upcomingReservations.map((res, i) => (
-          <Paper key={i} withBorder p="md" radius="md" className={styles.reservationContainer}>
+        {upcomingReservations.map((res) => (
+          <Paper key={res.zone + res.date} withBorder p="md" radius="md" className={styles.reservationContainer}>
             <Group justify="space-between" wrap="wrap">
               <Stack gap={2}>
                 <Text fw={600}>{res.zone}</Text>

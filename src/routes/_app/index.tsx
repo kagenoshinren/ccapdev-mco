@@ -11,8 +11,9 @@ import {
   List,
   rem,
   Badge,
+  Stack,
 } from "@mantine/core";
-import { IconCheck, IconArrowRight } from "@tabler/icons-react";
+import { IconCheck, IconArrowRight, IconBook, IconMessageCircle, IconCompass } from "@tabler/icons-react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import ctaPattern from "../../assets/backgrounds/cta-pattern.svg";
@@ -22,9 +23,9 @@ import aboutIllustration from "../../assets/features/about-illustration.svg";
 import step1Browse from "../../assets/features/step-1-browse.svg";
 import step2Reserve from "../../assets/features/step-2-reserve.svg";
 import step3Rate from "../../assets/features/step-3-rate.svg";
-import { HeroCarousel } from "../../components/hero-carousel.tsx";
+import studyNookHero from "../../assets/heroes/study-nook-hero.svg";
 import { LinkButton } from "../../components/link-button.tsx";
-import { CAROUSEL_FEATURES, FEATURES } from "../../data/features.ts";
+import { FEATURES } from "../../data/features.ts";
 import { STATS } from "../../data/stats.ts";
 
 import imgStyles from "../../components/shared-images.module.css";
@@ -102,9 +103,69 @@ function LandingPage() {
             </div>
 
             <div className={styles.heroImageContainer}>
-              <HeroCarousel features={CAROUSEL_FEATURES} />
+              <img src={studyNookHero} alt="Adormable — study space reservation" className={styles.heroIllustration} />
             </div>
           </div>
+
+          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md" mt={60}>
+            <Card
+              className={styles.quickActionCard}
+              component={Link}
+              to="/study-nook"
+              shadow="sm"
+              radius="md"
+              padding="lg"
+            >
+              <Group gap="sm" wrap="nowrap">
+                <ThemeIcon size={44} radius="md" variant="light" color="pink">
+                  <IconBook size={22} />
+                </ThemeIcon>
+                <Stack gap={2}>
+                  <Text fw={600} size="sm">
+                    Study Nook
+                  </Text>
+                  <Text c="dimmed" size="xs">
+                    Reserve a study space
+                  </Text>
+                </Stack>
+                <IconArrowRight size={16} color="var(--mantine-color-dimmed)" style={{ marginLeft: "auto" }} />
+              </Group>
+            </Card>
+
+            <Card className={styles.quickActionCard} component={Link} to="/lobby" shadow="sm" radius="md" padding="lg">
+              <Group gap="sm" wrap="nowrap">
+                <ThemeIcon size={44} radius="md" variant="light" color="grape">
+                  <IconMessageCircle size={22} />
+                </ThemeIcon>
+                <Stack gap={2}>
+                  <Text fw={600} size="sm">
+                    Virtual Lobby
+                  </Text>
+                  <Text c="dimmed" size="xs">
+                    Join discussions
+                  </Text>
+                </Stack>
+                <IconArrowRight size={16} color="var(--mantine-color-dimmed)" style={{ marginLeft: "auto" }} />
+              </Group>
+            </Card>
+
+            <Card className={styles.quickActionCard} component={Link} to="/guide" shadow="sm" radius="md" padding="lg">
+              <Group gap="sm" wrap="nowrap">
+                <ThemeIcon size={44} radius="md" variant="light" color="teal">
+                  <IconCompass size={22} />
+                </ThemeIcon>
+                <Stack gap={2}>
+                  <Text fw={600} size="sm">
+                    Survival Guide
+                  </Text>
+                  <Text c="dimmed" size="xs">
+                    Explore nearby spots
+                  </Text>
+                </Stack>
+                <IconArrowRight size={16} color="var(--mantine-color-dimmed)" style={{ marginLeft: "auto" }} />
+              </Group>
+            </Card>
+          </SimpleGrid>
         </Container>
       </div>
 
@@ -123,36 +184,38 @@ function LandingPage() {
         </div>
       </Container>
 
-      <Container size="lg" py={80}>
-        <Title className={styles.sectionTitle} ta="center">
-          Everything You Need, In 3 Simple Steps
-        </Title>
-        <Text c="dimmed" className={styles.sectionDescription} ta="center" mt="md">
-          Getting started with Adormable is as easy as 1-2-3.
-        </Text>
+      <Box py={80} style={{ backgroundColor: "#f8f9fa" }}>
+        <Container size="lg">
+          <Title className={styles.sectionTitle} ta="center">
+            Everything You Need, In 3 Simple Steps
+          </Title>
+          <Text c="dimmed" className={styles.sectionDescription} ta="center" mt="md">
+            Getting started with Adormable is as easy as 1-2-3.
+          </Text>
 
-        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xl" mt={50}>
-          {["Browse & Discover", "Reserve & Engage", "Rate & Connect"].map((title, i) => (
-            <Card key={title} shadow="md" radius="md" className={styles.stepCard} padding="xl">
-              <img src={STEP_IMAGES[i]} alt={title} className={imgStyles.stepImage} />
-              <div className={styles.stepNumber} style={{ marginTop: "var(--mantine-spacing-md)" }}>
-                {i + 1}
-              </div>
-              <Text ta="center" fz="lg" fw={500} mt="sm">
-                {title}
-              </Text>
-              <Text ta="center" fz="sm" c="dimmed" mt="sm">
-                {i === 0
-                  ? "Explore study zones, forum posts, or local establishments — all in one platform."
-                  : // oxlint-disable-next-line unicorn/no-nested-ternary
-                    i === 1
-                    ? "Book your study spot, join conversations, or write reviews about your favorite stores."
-                    : "Share your experiences, help fellow residents, and build your dorm community together!"}
-              </Text>
-            </Card>
-          ))}
-        </SimpleGrid>
-      </Container>
+          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xl" mt={50}>
+            {["Browse & Discover", "Reserve & Engage", "Rate & Connect"].map((title, i) => (
+              <Card key={title} shadow="md" radius="md" className={styles.stepCard} padding="xl">
+                <img src={STEP_IMAGES[i]} alt={title} className={imgStyles.stepImage} />
+                <div className={styles.stepNumber} style={{ marginTop: "var(--mantine-spacing-md)" }}>
+                  {i + 1}
+                </div>
+                <Text ta="center" fz="lg" fw={500} mt="sm">
+                  {title}
+                </Text>
+                <Text ta="center" fz="sm" c="dimmed" mt="sm">
+                  {i === 0
+                    ? "Explore study zones, forum posts, or local establishments — all in one platform."
+                    : // oxlint-disable-next-line unicorn/no-nested-ternary
+                      i === 1
+                      ? "Book your study spot, join conversations, or write reviews about your favorite stores."
+                      : "Share your experiences, help fellow residents, and build your dorm community together!"}
+                </Text>
+              </Card>
+            ))}
+          </SimpleGrid>
+        </Container>
+      </Box>
 
       <Box py={80} style={{ backgroundColor: "#fff7fa" }} id="features">
         <Container size="lg">
@@ -188,7 +251,10 @@ function LandingPage() {
                     fz="lg"
                     fw={500}
                     className={styles.featureCardTitle}
-                    style={{ "--feature-color": `var(--mantine-color-${feature.color}-filled)` } as React.CSSProperties}
+                    style={
+                      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
+                      { "--feature-color": `var(--mantine-color-${feature.color}-filled)` } as React.CSSProperties
+                    }
                   >
                     {feature.title}
                   </Text>
@@ -261,16 +327,12 @@ function LandingPage() {
             discover local gems.
           </Text>
           <Group justify="center">
-            <Link to="/login" search={{ register: "true" }}>
-              <Button size="lg" variant="white" color="pink" radius="xl">
-                Join Now
-              </Button>
-            </Link>
-            <Link to="/guide">
-              <Button size="lg" variant="outline" radius="xl" color="black">
-                Browse Directory
-              </Button>
-            </Link>
+            <LinkButton size="lg" variant="white" color="pink" radius="xl" to="/login" search={{ register: "true" }}>
+              Join Now
+            </LinkButton>
+            <LinkButton size="lg" variant="outline" radius="xl" color="black" to="/guide">
+              Browse Directory
+            </LinkButton>
           </Group>
         </div>
       </Container>

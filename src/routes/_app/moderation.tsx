@@ -54,6 +54,7 @@ function ForumModerationPage() {
               <Group justify="space-between" wrap="wrap">
                 <Group>
                   <Avatar color="red" radius="xl" size="sm">
+                    {/* oxlint-disable-next-line no-magic-numbers */}
                     {post.author.slice(0, 2).toUpperCase()}
                   </Avatar>
                   <Stack gap={2}>

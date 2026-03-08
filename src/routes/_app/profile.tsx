@@ -77,8 +77,8 @@ function UserProfilePage() {
 
         <Tabs.Panel value="reservations" pt="md">
           <Stack>
-            {reservations.map((res, i) => (
-              <Paper key={i} withBorder p="md" radius="md">
+            {reservations.map((res) => (
+              <Paper key={res.zone + res.date} withBorder p="md" radius="md">
                 <Group justify="space-between" wrap="wrap">
                   <Stack gap={2}>
                     <Text fw={600}>{res.zone}</Text>
@@ -113,8 +113,8 @@ function UserProfilePage() {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {activityHistory.map((item, i) => (
-                <Table.Tr key={i}>
+              {activityHistory.map((item) => (
+                <Table.Tr key={item.action}>
                   <Table.Td>{item.action}</Table.Td>
                   <Table.Td>
                     <Badge color={typeColors[item.type]} variant="light" size="sm">

@@ -1,7 +1,5 @@
-import type { LinkProps } from "@tanstack/react-router";
-
 import { Button, type DefaultMantineColor } from "@mantine/core";
-import { Link } from "@tanstack/react-router";
+import { Link, type LinkProps } from "@tanstack/react-router";
 
 interface BackButtonProps {
   readonly to: LinkProps["to"];

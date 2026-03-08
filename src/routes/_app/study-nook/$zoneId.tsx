@@ -27,10 +27,12 @@ function ReservationPage() {
   const [selectedDay, setSelectedDay] = useState(0);
   const [anonymous, setAnonymous] = useState(false);
 
-  const seatMap = Array.from({ length: 5 }, (_, row) =>
-    Array.from({ length: 8 }, (_, col) => ({
-      id: `${String.fromCodePoint(65 + row)}${col + 1}`,
-      taken: Math.random() > 0.6,
+  const CHAR_A = "A".codePointAt(0)!;
+  const SEAT_TAKEN_THRESHOLD = 0.6;
+  const seatMap = Array.from({ length: 5 }, (_row, row) =>
+    Array.from({ length: 8 }, (_seat, col) => ({
+      id: `${String.fromCodePoint(CHAR_A + row)}${col + 1}`,
+      taken: Math.random() > SEAT_TAKEN_THRESHOLD,
     })),
   );
 
@@ -73,9 +75,9 @@ function ReservationPage() {
             </Group>
             <Stack gap="xs" align="center">
               {seatMap.map((row, ri) => (
-                <Group key={ri} gap="xs">
+                <Group key={row[0]?.id.charAt(0) ?? ri} gap="xs">
                   <Text size="xs" w={20} fw={600}>
-                    {String.fromCodePoint(65 + ri)}
+                    {String.fromCodePoint(CHAR_A + ri)}
                   </Text>
                   {row.map((seat) => {
                     const isSelected = selectedSeat === seat.id;

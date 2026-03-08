@@ -21,9 +21,9 @@ export function Header({ isBurgerOpen, onSidebarToggle }: Readonly<HeaderProps>)
   const { isLoggedIn, role, name, logout } = useAuth();
   const isStaff = role === UserRole.CONCIERGE || role === UserRole.ADMIN;
   const isAdmin = role === UserRole.ADMIN;
-  // oxlint-disable-next-line unicorn/no-nested-ternary
-  const avatarSrc =
-    role === UserRole.ADMIN ? defaultAdmin : role === UserRole.CONCIERGE ? defaultConcierge : defaultAvatarFemale;
+  let avatarSrc = defaultAvatarFemale;
+  if (role === UserRole.ADMIN) avatarSrc = defaultAdmin;
+  else if (role === UserRole.CONCIERGE) avatarSrc = defaultConcierge;
 
   const location = useLocation();
 

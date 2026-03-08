@@ -15,6 +15,10 @@ import { SectionHeader } from "../../../components/section-header.tsx";
 
 import imgStyles from "../../../components/shared-images.module.css";
 
+const TO_PERCENT = 100;
+const HIGH_OCCUPANCY_PCT = 80;
+const MED_OCCUPANCY_PCT = 50;
+
 const zones = [
   { id: "main-hall", name: "Main Hall", capacity: 40, available: 12, status: "Open", image: mainHall },
   { id: "quiet-room-a", name: "Quiet Room A", capacity: 10, available: 3, status: "Open", image: quietRoomA },
@@ -44,7 +48,7 @@ function ZoneSelectionPage() {
 
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
         {filtered.map((zone) => {
-          const pct = ((zone.capacity - zone.available) / zone.capacity) * 100;
+          const pct = ((zone.capacity - zone.available) / zone.capacity) * TO_PERCENT;
           return (
             <Card key={zone.id} shadow="md" padding="lg" radius="md" className="content-card">
               <img src={zone.image} alt={zone.name} className={imgStyles.cardImage} />
@@ -61,7 +65,12 @@ function ZoneSelectionPage() {
                   {zone.available} / {zone.capacity} seats available
                 </Text>
                 {/* oxlint-disable-next-line unicorn/no-nested-ternary */}
-                <Progress value={pct} color={pct > 80 ? "red" : pct > 50 ? "yellow" : "green"} size="sm" />
+                {/* oxlint-disable-next-line unicorn/no-nested-ternary */}
+                <Progress
+                  value={pct}
+                  color={pct > HIGH_OCCUPANCY_PCT ? "red" : pct > MED_OCCUPANCY_PCT ? "yellow" : "green"}
+                  size="sm"
+                />
                 <Button
                   fullWidth
                   color="pink"
