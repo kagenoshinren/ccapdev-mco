@@ -129,15 +129,17 @@ TanStack Start's plugin (`resolveEntry`) scans `src/` for a file named `server.{
 
 ## Known limitations (future work)
 
-- **Activity log gaps**: 5 mutations (`updateThread`, `deleteComment`, `createOwnerReply`, `deleteEstablishment`, `updateEstablishment`) don't write to `ActivityLog` yet. See `Todo.md` R1.
-- **`deleteAccount` logging order**: The activity log is created AFTER the user row is deleted, so `userId` is null in the log entry. The `detail` field captures the email, so data isn't lost. See `Todo.md` R2.
-- **Establishment edit mode**: `admin/establishments.tsx` imports `updateEstablishment` but the Edit button pre-fills the create form — it always calls `createEstablishment` instead. See `Todo.md` R3.
-- **No report button in UI**: `createReport` server function exists but there's no "Report" button in lobby or thread views. See `Todo.md` R4.
-- **No owner reply UI**: `createOwnerReply` server function exists but `guide/$estId.tsx` has no reply form for owners. See `Todo.md` R5.
-- **No delete comment UI**: `deleteComment` server function exists but no delete button on comments. See `Todo.md` R6.
+- **Duplicate auth pages**: `login.tsx` has a combined login/register toggle; `signup.tsx` is a standalone signup page. Both work but the architecture is redundant. See `Todo.md` R11.
+- **Category management local-only**: `lobby/index.tsx` has a Manage Categories modal but changes only live in React state — lost on reload. See `Todo.md` R12.
+- **Walk-in student info**: `createWalkInReservation()` stores student name/ID only in the activity log string, not in the Reservation model. See `Todo.md` R13.
+- **No delete comment UI**: `deleteComment` server function exists but no UI button on comments. See `Todo.md` R6.
+- **Admin ban UX**: Ban button on admin/index fires immediately with hardcoded 7-day duration. See `Todo.md` R10.
 - Filtering/sorting on list pages is client-side only (no server-side pagination yet).
 - Seed users have no password hash — they exist only to populate relations. Real test accounts must be created via Sign Up.
-- No file/image upload yet (review images, user avatars). `FileInput` on the review form renders but does not upload.
+- No file/image upload yet (review images, user avatars). `FileInput` on the review form and profile photo modal render but do not upload.
 - No real-time updates (e.g. WebSocket for new comments).
 - `helpful` count on reviews is a client-side toggle only — no persistence model in the schema yet.
-- Walk-in reservations are attributed to the concierge's user ID; student name/ID is stored only in the activity log.
+- `admin/index.tsx` "Site Diagnostics" section shows hardcoded green badges. No real monitoring.
+- `admin/logs.tsx` "Error Logs" tab shows 4 hardcoded entries. Only the Activity Logs tab uses real data.
+- `admin/establishments.tsx` renders an address field that is never sent to the backend (Establishment model has no `address` field).
+- `login.tsx` "Remember me" checkbox renders but is non-functional.
