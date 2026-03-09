@@ -33,7 +33,7 @@ import { SectionHeader } from "../../../components/section-header.tsx";
 import { useAuth } from "../../../contexts/auth-context.tsx";
 import { TAG_COLORS, DEFAULT_TAGS, CATEGORY_COLOR_OPTIONS } from "../../../features/lobby/lobby.constants.ts";
 
-import styles from "./lobby.module.css";
+import styles from "./index.module.css";
 
 interface Post {
   id: string;
@@ -346,14 +346,15 @@ function ForumFeedPage() {
               <Progress
                 value={contentProgress}
                 size="xs"
-                // oxlint-disable-next-line unicorn/no-nested-ternary, no-nested-ternary
-                color={
-                  contentProgress > PROGRESS_DANGER_PCT
-                    ? "red"
-                    : contentProgress > PROGRESS_WARNING_PCT
-                      ? "yellow"
-                      : "grape"
-                }
+                color={(() => {
+                  if (contentProgress > PROGRESS_DANGER_PCT) {
+                    return "red";
+                  }
+                  if (contentProgress > PROGRESS_WARNING_PCT) {
+                    return "yellow";
+                  }
+                  return "grape";
+                })()}
                 style={{ flex: 1, maxWidth: 200 }}
               />
               <Text size="xs" c={newContent.length > CONTENT_MAX_LENGTH ? "red" : "dimmed"}>

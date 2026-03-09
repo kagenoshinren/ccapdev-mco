@@ -21,7 +21,7 @@ import { useState } from "react";
 import { BackButton } from "../../../components/back-button.tsx";
 import { TIME_SLOTS, WEEK_DAYS } from "../../../features/study-nook/study-nook.constants.ts";
 
-import styles from "./zoneId.module.css";
+import styles from "./$zoneId.module.css";
 
 export const Route = createFileRoute("/_app/study-nook/$zoneId")({ component: ReservationPage });
 

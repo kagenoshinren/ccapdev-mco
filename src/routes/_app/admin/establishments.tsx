@@ -22,7 +22,7 @@ import placeholder from "../../../assets/establishments/placeholder.svg";
 import { SectionHeader } from "../../../components/section-header.tsx";
 
 import imgStyles from "../../../components/shared-images.module.css";
-import styles from "./admin.module.css";
+import styles from "./index.module.css";
 
 const initialEstablishments = [
   { id: "1", name: "Café Manila", category: "Coffee Shop", owner: "cafe_manila_owner", status: "Active" },

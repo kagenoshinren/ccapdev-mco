@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { SectionHeader } from "../../../components/section-header.tsx";
 
-import styles from "./admin.module.css";
+import styles from "./index.module.css";
 
 const activityLogs = [
   {

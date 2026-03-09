@@ -29,7 +29,7 @@ import { StatCard } from "../../../components/stat-card.tsx";
 import { UserRole } from "../../../contexts/auth-context.tsx";
 import { ROLE_COLORS } from "../../../features/admin/admin.constants.ts";
 
-import styles from "./admin.module.css";
+import styles from "./index.module.css";
 
 const stats = [
   { label: "Total Users", value: "1,247", icon: IconUsers, color: "pink" },

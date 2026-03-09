@@ -19,7 +19,7 @@ import { SearchBar } from "../../../components/search-bar.tsx";
 import { SectionHeader } from "../../../components/section-header.tsx";
 
 import imgStyles from "../../../components/shared-images.module.css";
-import styles from "./guide.module.css";
+import styles from "./index.module.css";
 
 const CATEGORY_ICONS: Record<string, string> = {
   "Coffee Shop": catCoffeeShop,
