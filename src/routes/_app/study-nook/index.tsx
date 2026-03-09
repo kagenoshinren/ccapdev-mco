@@ -16,24 +16,26 @@ import { IconSearch } from "@tabler/icons-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
-const zones = [
-  { id: "main-hall", name: "Main Hall", capacity: 40, available: 12, status: "Open" },
-  { id: "quiet-room-a", name: "Quiet Room A", capacity: 10, available: 3, status: "Open" },
-  { id: "quiet-room-b", name: "Quiet Room B", capacity: 10, available: 0, status: "Full" },
-  { id: "group-study", name: "Group Study Room", capacity: 20, available: 8, status: "Open" },
-  { id: "computer-lab", name: "Computer Lab", capacity: 30, available: 15, status: "Open" },
-  { id: "reading-room", name: "Reading Room", capacity: 15, available: 0, status: "Full" },
-];
+import { getZones } from "../../../server/zones.ts";
 
 export const Route = createFileRoute("/_app/study-nook/")({
   head: () => ({ meta: [{ title: "Study Nook | Adormable" }] }),
+  loader: () => getZones(),
   component: ZoneSelectionPage,
 });
 
 function ZoneSelectionPage() {
+  const zones = Route.useLoaderData();
   const [search, setSearch] = useState("");
+  const [availability, setAvailability] = useState<string | null>("All");
 
-  const filtered = zones.filter((z) => z.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = zones
+    .filter((z) => z.name.toLowerCase().includes(search.toLowerCase()))
+    .filter((z) => {
+      if (availability === "Open") return z.status === "Open";
+      if (availability === "Full") return z.status === "Full";
+      return true;
+    });
 
   return (
     <Container size="lg" py="xl">
@@ -53,7 +55,7 @@ function ZoneSelectionPage() {
             setSearch(e.currentTarget.value);
           }}
         />
-        <Select placeholder="Filter by availability" data={["All", "Open", "Full"]} defaultValue="All" />
+        <Select placeholder="Filter by availability" data={["All", "Open", "Full"]} value={availability} onChange={setAvailability} />
       </Group>
 
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>

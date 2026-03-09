@@ -15,51 +15,23 @@ import {
   FileInput,
 } from "@mantine/core";
 import { IconThumbUp, IconPhoto } from "@tabler/icons-react";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
 
-const establishment = {
-  name: "Café Manila",
-  category: "Coffee Shop",
-  rating: 4.5,
-  totalReviews: 32,
-  description:
-    "Cozy café with great drip coffee and pastries. Perfect for late-night study sessions. Open from 7 AM to 11 PM daily.",
-};
+import { getEstablishment, createReview } from "../../../server/establishments.ts";
 
-const reviews = [
-  {
-    id: "r1",
-    author: "Maria Santos",
-    rating: 5,
-    time: "3 days ago",
-    content: "Best coffee near the dorm! Their iced latte is amazing and the WiFi is fast. Perfect for studying.",
-    helpful: 12,
-    ownerReply: "Thank you Maria! Glad you enjoy studying here!",
-  },
-  {
-    id: "r2",
-    author: "Juan Reyes",
-    rating: 4,
-    time: "1 week ago",
-    content: "Good food, decent prices. Can get a bit crowded during lunch. The staff is super friendly though!",
-    helpful: 7,
-    ownerReply: null,
-  },
-  {
-    id: "r3",
-    author: "Ava Cruz",
-    rating: 4,
-    time: "2 weeks ago",
-    content:
-      "Their pastries are freshly baked every day. I love the ensaymada and the Spanish bread. A bit pricey but worth it.",
-    helpful: 4,
-    ownerReply: "Thanks for the kind words Ava! We bake everything fresh daily!",
-  },
-];
-
-export const Route = createFileRoute("/_app/guide/$estId")({ component: EstablishmentDetailsPage });
+export const Route = createFileRoute("/_app/guide/$estId")({
+  loader: ({ params }) => getEstablishment({ data: { estId: params.estId } }),
+  component: EstablishmentDetailsPage,
+});
 
 function EstablishmentDetailsPage() {
+  const data = Route.useLoaderData();
+  const { estId } = Route.useParams();
+  const router = useRouter();
+  const [rating, setRating] = useState(0);
+  const [reviewContent, setReviewContent] = useState("");
+  const [helpfulSet, setHelpfulSet] = useState<Set<string>>(new Set());
   return (
     <Container size="md" py="xl">
       <Link to="/guide">
@@ -72,20 +44,20 @@ function EstablishmentDetailsPage() {
         <Group justify="space-between" wrap="wrap">
           <Stack gap="xs">
             <Group>
-              <Title order={2}>{establishment.name}</Title>
+              <Title order={2}>{data.name}</Title>
               <Badge variant="light" size="lg">
-                {establishment.category}
+                {data.category}
               </Badge>
             </Group>
-            <Text c="dimmed">{establishment.description}</Text>
+            <Text c="dimmed">{data.description}</Text>
           </Stack>
           <Stack align="center" gap={4}>
             <Text size="xl" fw={700}>
-              {establishment.rating}
+              {data.rating}
             </Text>
-            <Rating value={establishment.rating} fractions={2} readOnly />
+            <Rating value={data.rating} fractions={2} readOnly />
             <Text size="sm" c="dimmed">
-              {establishment.totalReviews} reviews
+              {data.totalReviews} reviews
             </Text>
           </Stack>
         </Group>
@@ -98,12 +70,27 @@ function EstablishmentDetailsPage() {
         <Stack>
           <Group>
             <Text size="sm">Your Rating:</Text>
-            <Rating size="lg" />
+            <Rating size="lg" value={rating} onChange={setRating} />
           </Group>
-          <Textarea placeholder="Share your experience..." minRows={4} />
+          <Textarea
+            placeholder="Share your experience..."
+            minRows={4}
+            value={reviewContent}
+            onChange={(e) => setReviewContent(e.currentTarget.value)}
+          />
           <Group>
             <FileInput placeholder="Upload images" leftSection={<IconPhoto size={16} />} accept="image/*" multiple />
-            <Button color="pink" radius="xl">
+            <Button
+              color="pink"
+              radius="xl"
+              onClick={async () => {
+                if (!rating || !reviewContent.trim()) return;
+                await createReview({ data: { establishmentId: estId, rating, content: reviewContent } });
+                setRating(0);
+                setReviewContent("");
+                router.invalidate();
+              }}
+            >
               Submit Review
             </Button>
           </Group>
@@ -111,17 +98,17 @@ function EstablishmentDetailsPage() {
       </Paper>
 
       <Title order={4} mb="md">
-        Reviews ({reviews.length})
+        Reviews ({data.reviews.length})
       </Title>
       <Stack>
-        {reviews.map((review) => (
+        {data.reviews.map((review: (typeof data.reviews)[number]) => (
           <Paper key={review.id} withBorder p="md" radius="md">
             <Group justify="space-between" mb="sm">
               <Group>
                 <Avatar color="pink" radius="xl">
                   {review.author
                     .split(" ")
-                    .map((n) => n[0])
+                    .map((n: string) => n[0])
                     .join("")}
                 </Avatar>
                 <Stack gap={2}>
@@ -137,11 +124,23 @@ function EstablishmentDetailsPage() {
               {review.content}
             </Text>
             <Group>
-              <ActionIcon variant="subtle" color="pink" size="sm">
+              <ActionIcon
+                variant="subtle"
+                color={helpfulSet.has(review.id) ? "pink" : "pink"}
+                size="sm"
+                onClick={() => {
+                  setHelpfulSet((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(review.id)) next.delete(review.id);
+                    else next.add(review.id);
+                    return next;
+                  });
+                }}
+              >
                 <IconThumbUp size={14} />
               </ActionIcon>
               <Text size="xs" c="dimmed">
-                {review.helpful} found helpful
+                {review.helpful + (helpfulSet.has(review.id) ? 1 : 0)} found helpful
               </Text>
             </Group>
             {review.ownerReply !== null && (
@@ -153,7 +152,7 @@ function EstablishmentDetailsPage() {
                       Owner
                     </Badge>
                     <Text size="xs" c="dimmed">
-                      Café Manila
+                      {data.ownerName}
                     </Text>
                   </Group>
                   <Text size="sm">{review.ownerReply}</Text>

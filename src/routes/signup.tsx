@@ -18,12 +18,13 @@ import { Link, createFileRoute, redirect, useRouter } from "@tanstack/react-rout
 import { useState } from "react";
 
 import { authClient } from "../lib/auth-client.ts";
+import { getSessionFn } from "../server/auth.ts";
 
 import styles from "./login.module.css";
 
 export const Route = createFileRoute("/signup")({
   beforeLoad: async () => {
-    const { data: session } = await authClient.getSession();
+    const session = await getSessionFn();
     if (session?.user) {
       throw redirect({ to: "/dashboard" });
     }

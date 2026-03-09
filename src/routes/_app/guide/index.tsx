@@ -15,63 +15,16 @@ import { IconSearch } from "@tabler/icons-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
-const establishments = [
-  {
-    id: "1",
-    name: "Café Manila",
-    category: "Coffee Shop",
-    rating: 4.5,
-    reviews: 32,
-    description: "Cozy café with great drip coffee and pastries.",
-  },
-  {
-    id: "2",
-    name: "Kuya's Carinderia",
-    category: "Filipino Food",
-    rating: 4.2,
-    reviews: 48,
-    description: "Affordable and authentic Filipino dishes, just 2 minutes away.",
-  },
-  {
-    id: "3",
-    name: "Quick Prints",
-    category: "Services",
-    rating: 3.8,
-    reviews: 15,
-    description: "Fast printing and photocopy services, open late.",
-  },
-  {
-    id: "4",
-    name: "Samgyup Corner",
-    category: "Korean BBQ",
-    rating: 4.7,
-    reviews: 61,
-    description: "Unlimited samgyeopsal near the dorm. Student-friendly prices.",
-  },
-  {
-    id: "5",
-    name: "Laundry Express",
-    category: "Services",
-    rating: 3.5,
-    reviews: 22,
-    description: "Drop-off laundry service with same-day pickup available.",
-  },
-  {
-    id: "6",
-    name: "7-Eleven Taft",
-    category: "Convenience Store",
-    rating: 3.9,
-    reviews: 10,
-    description: "24/7 convenience store right next to the dorm entrance.",
-  },
-];
+import { getEstablishments } from "../../../server/establishments.ts";
 
 export const Route = createFileRoute("/_app/guide/")({
   head: () => ({ meta: [{ title: "Survival Guide | Adormable" }] }),
+  loader: () => getEstablishments(),
   component: DirectoryListPage,
 });
 
 function DirectoryListPage() {
+  const establishments = Route.useLoaderData();
   const [search, setSearch] = useState("");
 
   const filtered = establishments.filter((e) => e.name.toLowerCase().includes(search.toLowerCase()));

@@ -1,42 +1,35 @@
 import { Container, Title, Text, Paper, Group, Stack, Badge, Button, Avatar, ActionIcon, Select } from "@mantine/core";
 import { IconTrash, IconBan } from "@tabler/icons-react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
 
-const flaggedPosts = [
-  {
-    id: "f1",
-    title: "Inappropriate content in thread",
-    author: "User123",
-    reason: "Harassment",
-    reports: 5,
-    date: "Feb 8, 2026",
-  },
-  {
-    id: "f2",
-    title: "Spam link posted repeatedly",
-    author: "SpamBot42",
-    reason: "Spam",
-    reports: 12,
-    date: "Feb 7, 2026",
-  },
-  {
-    id: "f3",
-    title: "Misleading review on Café Manila",
-    author: "FakeReviewer",
-    reason: "Misinformation",
-    reports: 3,
-    date: "Feb 6, 2026",
-  },
-];
+import { getReports, resolveReport, createBan } from "../../server/moderation.ts";
+import { getUsers } from "../../server/admin.ts";
 
 const reasonColors: Record<string, string> = { Harassment: "red", Spam: "orange", Misinformation: "yellow" };
 
 export const Route = createFileRoute("/_app/moderation")({
   head: () => ({ meta: [{ title: "Moderation | Adormable" }] }),
+  loader: async () => {
+    const [reports, users] = await Promise.all([getReports(), getUsers()]);
+    return { reports, users };
+  },
   component: ForumModerationPage,
 });
 
 function ForumModerationPage() {
+  const { reports: flaggedPosts, users } = Route.useLoaderData();
+  const router = useRouter();
+  const [banUser, setBanUser] = useState<string | null>(null);
+  const [banDuration, setBanDuration] = useState<string | null>(null);
+
+  const durationMap: Record<string, number> = {
+    "1 Day": 1,
+    "3 Days": 3,
+    "7 Days": 7,
+    "14 Days": 14,
+    "30 Days": 30,
+  };
   return (
     <Container size="lg" py="xl">
       <Title className="page-title" mb="xs">
@@ -70,10 +63,26 @@ function ForumModerationPage() {
                   <Badge color={reasonColors[post.reason]} variant="light">
                     {post.reason}
                   </Badge>
-                  <Button size="xs" variant="light" color="pink">
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="pink"
+                    onClick={async () => {
+                      await resolveReport({ data: { reportId: post.id, action: "resolve" } });
+                      router.invalidate();
+                    }}
+                  >
                     Review
                   </Button>
-                  <ActionIcon variant="light" color="red" size="sm">
+                  <ActionIcon
+                    variant="light"
+                    color="red"
+                    size="sm"
+                    onClick={async () => {
+                      await resolveReport({ data: { reportId: post.id, action: "delete" } });
+                      router.invalidate();
+                    }}
+                  >
                     <IconTrash size={14} />
                   </ActionIcon>
                 </Group>
@@ -94,17 +103,31 @@ function ForumModerationPage() {
           <Select
             label="Select User"
             placeholder="Search user..."
-            data={["User123", "SpamBot42", "FakeReviewer"]}
+            data={users.map((u) => ({ value: u.id, label: u.name }))}
             searchable
+            value={banUser}
+            onChange={setBanUser}
           />
           <Select
             label="Ban Duration"
             placeholder="Select duration"
             data={["1 Day", "3 Days", "7 Days", "14 Days", "30 Days"]}
+            value={banDuration}
+            onChange={setBanDuration}
           />
         </Group>
         <Group justify="flex-end" mt="md">
-          <Button color="red" radius="xl">
+          <Button
+            color="red"
+            radius="xl"
+            onClick={async () => {
+              if (!banUser || !banDuration) return;
+              await createBan({ data: { userId: banUser, reason: "Manual ban", durationDays: durationMap[banDuration] } });
+              setBanUser(null);
+              setBanDuration(null);
+              router.invalidate();
+            }}
+          >
             Issue Ban
           </Button>
         </Group>

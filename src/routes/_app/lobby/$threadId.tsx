@@ -11,58 +11,62 @@ import {
   ActionIcon,
   Textarea,
   Divider,
+  Modal,
+  TextInput,
+  Select,
 } from "@mantine/core";
 import { IconArrowUp, IconArrowDown, IconEdit, IconTrash } from "@tabler/icons-react";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
 
-const post = {
-  title: "Best study spots in the dorm?",
-  author: "Maria Santos",
-  time: "2 hours ago",
-  tag: "Discussion",
-  content: `I've been looking for quiet places to study after 9 PM. The main hall
-gets really crowded around that time and I can't focus with all the noise.
+import { TAG_COLORS } from "../../../features/lobby/lobby.constants.ts";
+import {
+  getThread,
+  createComment,
+  voteThread,
+  voteComment,
+  deleteThread,
+  updateThread,
+} from "../../../server/threads.ts";
 
-Does anyone know of any hidden gems in the building? I tried the reading room
-on the 4th floor but it closes at 8 PM.
-
-Any suggestions would be greatly appreciated!`,
-  upvotes: 24,
-  isAuthor: true,
-};
-
-const comments = [
-  {
-    id: "c1",
-    author: "Juan Reyes",
-    time: "1 hour ago",
-    content: "Try the rooftop area! It's usually empty after 8 PM and has decent lighting.",
-    upvotes: 8,
-    replies: [
-      {
-        id: "c1r1",
-        author: "Maria Santos",
-        time: "45 min ago",
-        content: "Oh I didn't know we could go there! Thanks, I'll check it out!",
-        upvotes: 2,
-      },
-    ],
-  },
-  {
-    id: "c2",
-    author: "Ava Cruz",
-    time: "30 min ago",
-    content: "The lobby lounge on the 2nd floor is pretty quiet at night. Plus it has power outlets everywhere.",
-    upvotes: 5,
-    replies: [],
-  },
-];
-
-export const Route = createFileRoute("/_app/lobby/$threadId")({ component: ThreadViewPage });
+export const Route = createFileRoute("/_app/lobby/$threadId")({
+  loader: ({ params }) => getThread({ data: { threadId: params.threadId } }),
+  component: ThreadViewPage,
+});
 
 function ThreadViewPage() {
+  const data = Route.useLoaderData();
+  const router = useRouter();
+  const [replyContent, setReplyContent] = useState("");
+  const [commentReplyId, setCommentReplyId] = useState<string | null>(null);
+  const [commentReplyContent, setCommentReplyContent] = useState("");
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState(data.title);
+  const [editContent, setEditContent] = useState(data.content);
+  const [editTag, setEditTag] = useState<string | null>(data.tag);
   return (
     <Container size="md" py="xl">
+      <Modal opened={editOpen} onClose={() => setEditOpen(false)} title="Edit Thread" centered>
+        <Stack>
+          <TextInput label="Title" value={editTitle} onChange={(e) => setEditTitle(e.currentTarget.value)} />
+          <Select label="Tag" data={Object.keys(TAG_COLORS)} value={editTag} onChange={setEditTag} />
+          <Textarea label="Content" minRows={4} value={editContent} onChange={(e) => setEditContent(e.currentTarget.value)} />
+          <Group justify="flex-end">
+            <Button
+              color="pink"
+              radius="xl"
+              onClick={async () => {
+                await updateThread({ data: { threadId: data.id, title: editTitle, content: editContent, tag: editTag ?? undefined } });
+                setEditOpen(false);
+                router.invalidate();
+              }}
+            >
+              Save Changes
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
       <Link to="/lobby">
         <Button variant="subtle" color="pink" mb="md" size="sm">
           ← Back to Lobby
@@ -73,63 +77,105 @@ function ThreadViewPage() {
         <Group justify="space-between" mb="md">
           <Group>
             <Avatar color="pink" radius="xl">
-              MS
+              {data.author
+                .split(" ")
+                .map((n: string) => n[0])
+                .join("")}
             </Avatar>
             <Stack gap={2}>
               <Group gap="xs">
-                <Text fw={700}>{post.title}</Text>
+                <Text fw={700}>{data.title}</Text>
                 <Badge color="pink" size="sm" variant="light">
-                  {post.tag}
+                  {data.tag}
                 </Badge>
               </Group>
               <Text size="xs" c="dimmed">
-                {post.author} · {post.time}
+                {data.author} · {data.time}
               </Text>
             </Stack>
           </Group>
-          {post.isAuthor && (
+          {data.isAuthor && (
             <Group gap="xs">
-              <ActionIcon variant="light" color="pink" size="sm">
+              <ActionIcon variant="light" color="pink" size="sm" onClick={() => setEditOpen(true)}>
                 <IconEdit size={14} />
               </ActionIcon>
-              <ActionIcon variant="light" color="red" size="sm">
+              <ActionIcon
+                variant="light"
+                color="red"
+                size="sm"
+                onClick={async () => {
+                  if (!confirm("Delete this thread?")) return;
+                  await deleteThread({ data: { threadId: data.id } });
+                  router.navigate({ to: "/lobby" });
+                }}
+              >
                 <IconTrash size={14} />
               </ActionIcon>
             </Group>
           )}
         </Group>
         <Text style={{ whiteSpace: "pre-line" }} mb="md">
-          {post.content}
+          {data.content}
         </Text>
         <Group>
-          <ActionIcon variant="light" color="pink">
+          <ActionIcon
+            variant="light"
+            color="pink"
+            onClick={async () => {
+              await voteThread({ data: { threadId: data.id, value: 1 } });
+              router.invalidate();
+            }}
+          >
             <IconArrowUp size={16} />
           </ActionIcon>
-          <Text fw={600}>{post.upvotes}</Text>
-          <ActionIcon variant="light" color="gray">
+          <Text fw={600}>{data.upvotes}</Text>
+          <ActionIcon
+            variant="light"
+            color="gray"
+            onClick={async () => {
+              await voteThread({ data: { threadId: data.id, value: -1 } });
+              router.invalidate();
+            }}
+          >
             <IconArrowDown size={16} />
           </ActionIcon>
         </Group>
       </Paper>
 
       <Paper shadow="sm" p="md" radius="md" className="content-card" mb="lg">
-        <Textarea placeholder="Write a reply..." minRows={3} mb="sm" />
-        <Button size="sm" color="pink" radius="xl">
+        <Textarea
+          placeholder="Write a reply..."
+          minRows={3}
+          mb="sm"
+          value={replyContent}
+          onChange={(e) => setReplyContent(e.currentTarget.value)}
+        />
+        <Button
+          size="sm"
+          color="pink"
+          radius="xl"
+          onClick={async () => {
+            if (!replyContent.trim()) return;
+            await createComment({ data: { threadId: data.id, content: replyContent } });
+            setReplyContent("");
+            router.invalidate();
+          }}
+        >
           Post Reply
         </Button>
       </Paper>
 
       <Title order={4} mb="md">
-        Comments ({comments.length})
+        Comments ({data.comments.length})
       </Title>
       <Stack>
-        {comments.map((comment) => (
+        {data.comments.map((comment: (typeof data.comments)[number]) => (
           <Paper key={comment.id} withBorder p="md" radius="md">
             <Group mb="xs">
               <Avatar color="pink" radius="xl" size="sm">
                 {comment.author
                   .split(" ")
-                  .map((n) => n[0])
+                  .map((n: string) => n[0])
                   .join("")}
               </Avatar>
               <Text size="sm" fw={600}>
@@ -143,24 +189,65 @@ function ThreadViewPage() {
               {comment.content}
             </Text>
             <Group gap="xs">
-              <ActionIcon variant="subtle" size="xs">
+              <ActionIcon
+                variant="subtle"
+                size="xs"
+                onClick={async () => {
+                  await voteComment({ data: { commentId: comment.id, value: 1 } });
+                  router.invalidate();
+                }}
+              >
                 <IconArrowUp size={12} />
               </ActionIcon>
               <Text size="xs">{comment.upvotes}</Text>
-              <Button variant="subtle" size="xs">
+              <Button
+                variant="subtle"
+                size="xs"
+                onClick={() => setCommentReplyId(commentReplyId === comment.id ? null : comment.id)}
+              >
                 Reply
               </Button>
             </Group>
+            {commentReplyId === comment.id && (
+              <Stack mt="xs" gap="xs">
+                <Textarea
+                  placeholder="Write a reply..."
+                  minRows={2}
+                  size="sm"
+                  value={commentReplyContent}
+                  onChange={(e) => setCommentReplyContent(e.currentTarget.value)}
+                />
+                <Group>
+                  <Button
+                    size="xs"
+                    color="pink"
+                    radius="xl"
+                    onClick={async () => {
+                      if (!commentReplyContent.trim()) return;
+                      await createComment({ data: { threadId: data.id, content: commentReplyContent, parentId: comment.id } });
+                      setCommentReplyContent("");
+                      setCommentReplyId(null);
+                      router.invalidate();
+                    }}
+                  >
+                    Post Reply
+                  </Button>
+                  <Button size="xs" variant="subtle" color="gray" onClick={() => setCommentReplyId(null)}>
+                    Cancel
+                  </Button>
+                </Group>
+              </Stack>
+            )}
             {comment.replies.length > 0 && (
               <>
                 <Divider my="sm" />
-                {comment.replies.map((reply) => (
+                {comment.replies.map((reply: (typeof comment.replies)[number]) => (
                   <Paper key={reply.id} bg="pink.0" p="sm" radius="sm" ml="xl">
                     <Group mb={4}>
                       <Avatar color="pink" radius="xl" size="xs">
                         {reply.author
                           .split(" ")
-                          .map((n) => n[0])
+                          .map((n: string) => n[0])
                           .join("")}
                       </Avatar>
                       <Text size="xs" fw={600}>

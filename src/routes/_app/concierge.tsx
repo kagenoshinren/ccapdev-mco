@@ -13,22 +13,35 @@ import {
   ActionIcon,
 } from "@mantine/core";
 import { IconTrash, IconPlus } from "@tabler/icons-react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
 
-const expiredBookings = [
-  { id: "b1", student: "Carlos Lim", zone: "Main Hall – Seat 5", time: "10:00 AM – 12:00 PM", status: "No-Show" },
-  { id: "b2", student: "Anonymous", zone: "Quiet Room B – Seat 3", time: "1:00 PM – 2:30 PM", status: "Expired" },
-  { id: "b3", student: "Ava Cruz", zone: "Group Study – Table 2", time: "3:00 PM – 5:00 PM", status: "No-Show" },
-];
-
-const zones = ["Main Hall", "Quiet Room A", "Quiet Room B", "Group Study Room", "Computer Lab"];
+import {
+  getAllReservations,
+  purgeExpiredReservations,
+  cancelReservation,
+  createWalkInReservation,
+} from "../../server/reservations.ts";
+import { getZones } from "../../server/zones.ts";
 
 export const Route = createFileRoute("/_app/concierge")({
   head: () => ({ meta: [{ title: "Concierge | Adormable" }] }),
+  loader: async () => {
+    const [reservations, zones] = await Promise.all([getAllReservations(), getZones()]);
+    return { reservations, zones };
+  },
   component: ConciergeDashboardPage,
 });
 
 function ConciergeDashboardPage() {
+  const { reservations, zones } = Route.useLoaderData();
+  const router = useRouter();
+  const zoneNames = zones.map((z) => z.name);
+  const [studentName, setStudentName] = useState("");
+  const [studentId, setStudentId] = useState("");
+  const [walkInZone, setWalkInZone] = useState<string | null>(null);
+  const [startTime, setStartTime] = useState<string | null>(null);
+  const [endTime, setEndTime] = useState<string | null>(null);
   return (
     <Container size="lg" py="xl">
       <Title className="page-title" mb="xs">
@@ -47,24 +60,52 @@ function ConciergeDashboardPage() {
         </Title>
         <Stack>
           <Group grow>
-            <TextInput label="Student Name" placeholder="Enter student name" />
-            <TextInput label="Student ID" placeholder="e.g. 2021-12345" />
+            <TextInput label="Student Name" placeholder="Enter student name" value={studentName} onChange={(e) => setStudentName(e.currentTarget.value)} />
+            <TextInput label="Student ID" placeholder="e.g. 2021-12345" value={studentId} onChange={(e) => setStudentId(e.currentTarget.value)} />
           </Group>
           <Group grow>
-            <Select label="Zone" placeholder="Select zone" data={zones} />
+            <Select label="Zone" placeholder="Select zone" data={zoneNames} value={walkInZone} onChange={setWalkInZone} />
             <Select
               label="Start Time"
               placeholder="Select"
               data={["8:00 AM", "8:30 AM", "9:00 AM", "9:30 AM", "10:00 AM"]}
+              value={startTime}
+              onChange={setStartTime}
             />
             <Select
               label="End Time"
               placeholder="Select"
               data={["10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM"]}
+              value={endTime}
+              onChange={setEndTime}
             />
           </Group>
           <Group justify="flex-end">
-            <Button color="pink" radius="xl">
+            <Button
+              color="pink"
+              radius="xl"
+              onClick={async () => {
+                if (!studentName || !studentId || !walkInZone || !startTime || !endTime) return;
+                const zone = zones.find((z) => z.name === walkInZone);
+                if (!zone) return;
+                const today = new Date().toISOString().slice(0, 10);
+                await createWalkInReservation({
+                  data: {
+                    studentName,
+                    studentId,
+                    zoneId: zone.id,
+                    startTime: new Date(`${today} ${startTime}`).toISOString(),
+                    endTime: new Date(`${today} ${endTime}`).toISOString(),
+                  },
+                });
+                setStudentName("");
+                setStudentId("");
+                setWalkInZone(null);
+                setStartTime(null);
+                setEndTime(null);
+                router.invalidate();
+              }}
+            >
               Create Booking
             </Button>
           </Group>
@@ -90,18 +131,26 @@ function ConciergeDashboardPage() {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {expiredBookings.map((booking) => (
+            {reservations.map((booking) => (
               <Table.Tr key={booking.id}>
                 <Table.Td>{booking.student}</Table.Td>
                 <Table.Td>{booking.zone}</Table.Td>
                 <Table.Td>{booking.time}</Table.Td>
                 <Table.Td>
-                  <Badge color={booking.status === "No-Show" ? "red" : "yellow"} variant="light" size="sm">
+                  <Badge color={booking.status === "Cancelled" ? "red" : "yellow"} variant="light" size="sm">
                     {booking.status}
                   </Badge>
                 </Table.Td>
                 <Table.Td>
-                  <ActionIcon variant="light" color="red" size="sm">
+                  <ActionIcon
+                    variant="light"
+                    color="red"
+                    size="sm"
+                    onClick={async () => {
+                      await cancelReservation({ data: { reservationId: booking.id } });
+                      router.invalidate();
+                    }}
+                  >
                     <IconTrash size={14} />
                   </ActionIcon>
                 </Table.Td>
@@ -110,7 +159,15 @@ function ConciergeDashboardPage() {
           </Table.Tbody>
         </Table>
         <Group justify="flex-end" mt="md">
-          <Button color="red" variant="light" radius="xl">
+          <Button
+            color="red"
+            variant="light"
+            radius="xl"
+            onClick={async () => {
+              await purgeExpiredReservations();
+              router.invalidate();
+            }}
+          >
             Purge All Expired
           </Button>
         </Group>

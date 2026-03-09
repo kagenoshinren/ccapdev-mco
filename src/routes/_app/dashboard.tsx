@@ -17,21 +17,19 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { useAuth } from "../../contexts/auth-context.tsx";
 import { QUICK_ACTIONS } from "../../features/dashboard/data/quick-actions.ts";
+import { getMyReservations } from "../../server/reservations.ts";
 
 import styles from "./dashboard.module.css";
 
-const upcomingReservations = [
-  { zone: "Quiet Room A", date: "Feb 10, 2026", time: "2:00 PM - 4:00 PM", status: "Confirmed" },
-  { zone: "Main Hall - Seat 12", date: "Feb 12, 2026", time: "10:00 AM - 12:00 PM", status: "Pending" },
-];
-
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard | Adormable" }] }),
+  loader: () => getMyReservations(),
   component: DashboardPage,
 });
 
 function DashboardPage() {
   const { name } = useAuth();
+  const upcomingReservations = Route.useLoaderData();
 
   return (
     <Container size="lg" py="xl">
@@ -87,7 +85,7 @@ function DashboardPage() {
                 <Badge color={res.status === "Confirmed" ? "green" : "yellow"} variant="light">
                   {res.status}
                 </Badge>
-                <Button size="xs" variant="light" color="pink" radius="xl">
+                <Button size="xs" variant="light" color="pink" radius="xl" component={Link} to="/profile">
                   Manage
                 </Button>
               </Group>

@@ -14,24 +14,41 @@ import {
   Badge,
   Tooltip,
 } from "@mantine/core";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { TIME_SLOTS, WEEK_DAYS } from "../../../features/study-nook/study-nook.constants.ts";
+import { createReservation } from "../../../server/reservations.ts";
+import { getZone } from "../../../server/zones.ts";
 
-export const Route = createFileRoute("/_app/study-nook/$zoneId")({ component: ReservationPage });
+export const Route = createFileRoute("/_app/study-nook/$zoneId")({
+  loader: ({ params }) => getZone({ data: { zoneId: params.zoneId } }),
+  component: ReservationPage,
+});
 
 function ReservationPage() {
+  const zone = Route.useLoaderData();
+  const router = useRouter();
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState(0);
+  const [startTime, setStartTime] = useState<string | null>(null);
+  const [endTime, setEndTime] = useState<string | null>(null);
   const [anonymous, setAnonymous] = useState(false);
 
-  const seatMap = Array.from({ length: 5 }, (_, row) =>
-    Array.from({ length: 8 }, (_, col) => ({
-      id: `${String.fromCodePoint(65 + row)}${col + 1}`,
-      taken: Math.random() > 0.6,
-    })),
-  );
+  // group seats into rows by letter prefix
+  const seatRows: { id: string; label: string; taken: boolean }[][] = [];
+  let currentRow: typeof seatRows[0] = [];
+  let currentLetter = "";
+  for (const seat of zone.seats) {
+    const letter = seat.label.charAt(0);
+    if (letter !== currentLetter && currentRow.length > 0) {
+      seatRows.push(currentRow);
+      currentRow = [];
+    }
+    currentLetter = letter;
+    currentRow.push(seat);
+  }
+  if (currentRow.length > 0) seatRows.push(currentRow);
 
   return (
     <Container size="lg" py="xl">
@@ -44,7 +61,7 @@ function ReservationPage() {
       </Group>
 
       <Title className="page-title" mb="xs">
-        Main Hall - Reserve a Seat
+        {zone.name} - Reserve a Seat
       </Title>
       <Text c="dimmed" mb="xl">
         Click on a green seat to select it, then choose your time slot.
@@ -77,15 +94,15 @@ function ReservationPage() {
               </Group>
             </Group>
             <Stack gap="xs" align="center">
-              {seatMap.map((row, ri) => (
+              {seatRows.map((row, ri) => (
                 <Group key={ri} gap="xs">
                   <Text size="xs" w={20} fw={600}>
-                    {String.fromCodePoint(65 + ri)}
+                    {row[0].label.charAt(0)}
                   </Text>
                   {row.map((seat) => {
                     const isSelected = selectedSeat === seat.id;
                     return (
-                      <Tooltip key={seat.id} label={seat.id}>
+                      <Tooltip key={seat.id} label={seat.label}>
                         <ActionIcon
                           size="md"
                           variant="filled"
@@ -100,7 +117,7 @@ function ReservationPage() {
                           style={{ cursor: seat.taken ? "not-allowed" : "pointer" }}
                         >
                           <Text size="xs" fw={600}>
-                            {seat.id.slice(1)}
+                            {seat.label.slice(1)}
                           </Text>
                         </ActionIcon>
                       </Tooltip>
@@ -130,8 +147,8 @@ function ReservationPage() {
                   </Button>
                 ))}
               </SimpleGrid>
-              <Select label="Start Time" placeholder="Select time" data={TIME_SLOTS} />
-              <Select label="End Time" placeholder="Select time" data={TIME_SLOTS} />
+              <Select label="Start Time" placeholder="Select time" data={TIME_SLOTS} value={startTime} onChange={setStartTime} />
+              <Select label="End Time" placeholder="Select time" data={TIME_SLOTS} value={endTime} onChange={setEndTime} />
               <Switch
                 label="Anonymous Reservation"
                 description="Your name won't be visible to others"
@@ -143,11 +160,33 @@ function ReservationPage() {
               {selectedSeat !== null && (
                 <Paper bg="pink.0" p="sm" radius="md">
                   <Text size="sm">
-                    Selected seat: <Badge>{selectedSeat}</Badge>
+                    Selected seat: <Badge>{zone.seats.find((s: (typeof zone.seats)[number]) => s.id === selectedSeat)?.label ?? selectedSeat}</Badge>
                   </Text>
                 </Paper>
               )}
-              <Button fullWidth disabled={selectedSeat !== null} color="pink" radius="xl">
+              <Button
+                fullWidth
+                disabled={selectedSeat === null || !startTime || !endTime}
+                color="pink"
+                radius="xl"
+                onClick={async () => {
+                  if (!selectedSeat || !startTime || !endTime) return;
+                  const baseDate = new Date();
+                  baseDate.setDate(baseDate.getDate() + ((selectedDay - baseDate.getDay() + 7) % 7 || 7));
+                  const dateStr = baseDate.toISOString().slice(0, 10);
+                  await createReservation({
+                    data: {
+                      zoneId: zone.id,
+                      seatId: selectedSeat,
+                      date: `${dateStr}T00:00:00.000Z`,
+                      startTime: `${dateStr}T${to24h(startTime)}:00.000Z`,
+                      endTime: `${dateStr}T${to24h(endTime)}:00.000Z`,
+                      isAnonymous: anonymous,
+                    },
+                  });
+                  router.invalidate();
+                }}
+              >
                 Confirm Reservation
               </Button>
             </Stack>
@@ -156,4 +195,13 @@ function ReservationPage() {
       </Grid>
     </Container>
   );
+}
+
+function to24h(time: string): string {
+  const [rawTime, period] = time.split(" ");
+  const [h, m] = rawTime.split(":").map(Number);
+  let hour = h;
+  if (period === "PM" && h !== 12) hour += 12;
+  if (period === "AM" && h === 12) hour = 0;
+  return `${String(hour).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }

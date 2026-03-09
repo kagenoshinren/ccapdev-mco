@@ -19,12 +19,13 @@ import { Link, createFileRoute, redirect, useRouter } from "@tanstack/react-rout
 import { useState } from "react";
 
 import { authClient } from "../lib/auth-client.ts";
+import { getSessionFn } from "../server/auth.ts";
 
 import styles from "./login.module.css";
 
 export const Route = createFileRoute("/login")({
   beforeLoad: async () => {
-    const { data: session } = await authClient.getSession();
+    const session = await getSessionFn();
     if (session?.user) {
       throw redirect({ to: "/dashboard" });
     }
@@ -34,9 +35,31 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const { register } = Route.useSearch();
-  const [isRegister, setIsRegister] = useState(register === "true");
-  const { login } = useAuth();
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const form = useForm({
+    initialValues: { email: "", password: "" },
+    validate: {
+      email: (v: string) => (/^\S+@\S+\.\S+$/.test(v) ? null : "Invalid email"),
+      password: (v: string) => (v.length < 8 ? "Password must be at least 8 characters" : null),
+    },
+  });
+
+  const handleSubmit = async (values: typeof form.values) => {
+    setError("");
+    setLoading(true);
+    const { error: authError } = await authClient.signIn.email({ email: values.email, password: values.password });
+    setLoading(false);
+
+    if (authError) {
+      setError(authError.message ?? "Login failed. Please try again.");
+      return;
+    }
+
+    void router.navigate({ to: "/dashboard" });
+  };
 
   return (
     <div className={styles.page}>

@@ -21,31 +21,32 @@ import {
   IconBan,
   IconRefresh,
 } from "@tabler/icons-react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 
-import { UserRole } from "../../../contexts/auth-context.tsx";
 import { ROLE_COLORS } from "../../../features/admin/admin.constants.ts";
+import type { UserRole } from "../../../contexts/auth-context.tsx";
+import { getAdminStats, getUsers, updateUserRole } from "../../../server/admin.ts";
+import { createBan } from "../../../server/moderation.ts";
 
-const stats = [
-  { label: "Total Users", value: "1,247", icon: IconUsers, color: "pink" },
-  { label: "Active Reservations", value: "89", icon: IconBook, color: "teal" },
-  { label: "Forum Posts", value: "3,421", icon: IconMessageCircle, color: "grape" },
-  { label: "Reviews", value: "612", icon: IconStar, color: "yellow" },
-];
-
-const users = [
-  { id: "u1", name: "Maria Santos", email: "maria@adormable.com", role: UserRole.RESIDENT, status: "Active" },
-  { id: "u2", name: "Juan Reyes", email: "juan@adormable.com", role: UserRole.RESIDENT, status: "Active" },
-  { id: "u3", name: "SpamBot42", email: "spam@fake.com", role: UserRole.RESIDENT, status: "Banned" },
-  { id: "u4", name: "Lab Tech Mike", email: "mike@adormable.com", role: UserRole.CONCIERGE, status: "Active" },
+const STAT_META = [
+  { key: "users" as const, label: "Total Users", icon: IconUsers, color: "pink" },
+  { key: "reservations" as const, label: "Active Reservations", icon: IconBook, color: "teal" },
+  { key: "threads" as const, label: "Forum Posts", icon: IconMessageCircle, color: "grape" },
+  { key: "reviews" as const, label: "Reviews", icon: IconStar, color: "yellow" },
 ];
 
 export const Route = createFileRoute("/_app/admin/")({
   head: () => ({ meta: [{ title: "Admin | Adormable" }] }),
+  loader: async () => {
+    const [stats, users] = await Promise.all([getAdminStats(), getUsers()]);
+    return { stats, users };
+  },
   component: AdminControlPanelPage,
 });
 
 function AdminControlPanelPage() {
+  const { stats, users } = Route.useLoaderData();
+  const router = useRouter();
   return (
     <Container size="lg" py="xl">
       <Title className="page-title" mb="xs">
@@ -56,7 +57,7 @@ function AdminControlPanelPage() {
       </Text>
 
       <SimpleGrid cols={{ base: 2, md: 4 }} mb="xl">
-        {stats.map((stat) => (
+        {STAT_META.map((stat) => (
           <Paper key={stat.label} shadow="md" p="md" radius="md" className="content-card">
             <Group justify="space-between">
               <Stack gap={4}>
@@ -64,7 +65,7 @@ function AdminControlPanelPage() {
                   {stat.label}
                 </Text>
                 <Text size="xl" fw={700}>
-                  {stat.value}
+                  {stats[stat.key].toLocaleString()}
                 </Text>
               </Stack>
               <RingProgress
@@ -103,7 +104,7 @@ function AdminControlPanelPage() {
                   </Text>
                 </Table.Td>
                 <Table.Td>
-                  <Badge color={ROLE_COLORS[user.role]} variant="light" size="sm">
+                  <Badge color={ROLE_COLORS[user.role as UserRole]} variant="light" size="sm">
                     {user.role}
                   </Badge>
                 </Table.Td>
@@ -114,10 +115,32 @@ function AdminControlPanelPage() {
                 </Table.Td>
                 <Table.Td>
                   <Group gap={4}>
-                    <ActionIcon variant="light" size="sm" color="pink">
+                    <ActionIcon
+                      variant="light"
+                      size="sm"
+                      color="pink"
+                      onClick={async () => {
+                        const nextRole =
+                          user.role === "resident"
+                            ? "concierge"
+                            : user.role === "concierge"
+                              ? "admin"
+                              : "resident";
+                        await updateUserRole({ data: { userId: user.id, role: nextRole } });
+                        router.invalidate();
+                      }}
+                    >
                       <IconRefresh size={14} />
                     </ActionIcon>
-                    <ActionIcon variant="light" size="sm" color="red">
+                    <ActionIcon
+                      variant="light"
+                      size="sm"
+                      color="red"
+                      onClick={async () => {
+                        await createBan({ data: { userId: user.id, reason: "Admin action", durationDays: 7 } });
+                        router.invalidate();
+                      }}
+                    >
                       <IconBan size={14} />
                     </ActionIcon>
                   </Group>

@@ -21,7 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       isLoggedIn: !!session?.user,
-      role: (session?.user?.role as UserRole) ?? "guest",
+      role: ((session?.user as Record<string, unknown>)?.role as UserRole) ?? "guest",
       name: session?.user?.name ?? "",
       isPending,
       signOut,

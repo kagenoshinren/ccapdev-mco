@@ -15,25 +15,26 @@ import {
   ActionIcon,
 } from "@mantine/core";
 import { IconUser, IconCalendar, IconHistory, IconEdit, IconTrash, IconCamera } from "@tabler/icons-react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 
-const reservations = [
-  { zone: "Quiet Room A", date: "Feb 10, 2026", time: "2:00 PM – 4:00 PM", status: "Confirmed" },
-  { zone: "Main Hall – Seat 12", date: "Feb 12, 2026", time: "10:00 AM – 12:00 PM", status: "Pending" },
-];
-
-const activityHistory = [
-  { action: "Booked Quiet Room A", date: "Feb 8, 2026", type: "Reservation" },
-  { action: "Posted in Virtual Lobby", date: "Feb 7, 2026", type: "Forum" },
-  { action: "Reviewed Café Manila (5★)", date: "Feb 5, 2026", type: "Review" },
-  { action: "Upvoted 'Wi-Fi Issues'", date: "Feb 4, 2026", type: "Forum" },
-];
+import { getUserProfile, updateProfile, deleteAccount } from "../../server/profile.ts";
+import { cancelReservation } from "../../server/reservations.ts";
 
 const typeColors: Record<string, string> = { Reservation: "pink", Forum: "grape", Review: "teal" };
 
-export const Route = createFileRoute("/_app/profile")({ component: UserProfilePage });
+export const Route = createFileRoute("/_app/profile")({
+  loader: () => getUserProfile(),
+  component: UserProfilePage,
+});
 
 function UserProfilePage() {
+  const profile = Route.useLoaderData();
+  const router = useRouter();
+  const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState(profile.name);
+  const [bio, setBio] = useState(profile.bio);
+
   return (
     <Container size="md" py="xl">
       <Title className="page-title" mb="xl">
@@ -44,18 +45,28 @@ function UserProfilePage() {
         <Group wrap="wrap">
           <Stack align="center">
             <Avatar size={100} radius="xl" color="pink">
-              MS
+              {profile.name
+                .split(" ")
+                .map((n: string) => n[0])
+                .join("")}
             </Avatar>
             <Button variant="light" color="pink" size="xs" leftSection={<IconCamera size={14} />}>
               Change Photo
             </Button>
           </Stack>
           <Stack style={{ flex: 1 }} gap="sm">
-            <TextInput label="Display Name" defaultValue="Maria Santos" />
-            <Textarea label="Bio" defaultValue="3rd year CS student. Coffee addict." minRows={2} />
-            <TextInput label="Email" defaultValue="maria@adormable.com" disabled />
+            <TextInput label="Display Name" value={displayName} onChange={(e) => setDisplayName(e.currentTarget.value)} />
+            <Textarea label="Bio" value={bio} onChange={(e) => setBio(e.currentTarget.value)} minRows={2} />
+            <TextInput label="Email" value={profile.email} disabled />
             <Group justify="flex-end">
-              <Button color="pink" radius="xl">
+              <Button
+                color="pink"
+                radius="xl"
+                onClick={async () => {
+                  await updateProfile({ data: { name: displayName, bio } });
+                  router.invalidate();
+                }}
+              >
                 Save Changes
               </Button>
             </Group>
@@ -78,7 +89,7 @@ function UserProfilePage() {
 
         <Tabs.Panel value="reservations" pt="md">
           <Stack>
-            {reservations.map((res, i) => (
+            {profile.reservations.map((res, i) => (
               <Paper key={i} withBorder p="md" radius="md">
                 <Group justify="space-between" wrap="wrap">
                   <Stack gap={2}>
@@ -91,10 +102,18 @@ function UserProfilePage() {
                     <Badge color={res.status === "Confirmed" ? "green" : "yellow"} variant="light">
                       {res.status}
                     </Badge>
-                    <ActionIcon variant="light" color="pink" size="sm">
+                    <ActionIcon variant="light" color="pink" size="sm" onClick={() => navigate({ to: "/study-nook" })}>
                       <IconEdit size={14} />
                     </ActionIcon>
-                    <ActionIcon variant="light" color="red" size="sm">
+                    <ActionIcon
+                      variant="light"
+                      color="red"
+                      size="sm"
+                      onClick={async () => {
+                        await cancelReservation({ data: { reservationId: res.id } });
+                        router.invalidate();
+                      }}
+                    >
                       <IconTrash size={14} />
                     </ActionIcon>
                   </Group>
@@ -114,7 +133,7 @@ function UserProfilePage() {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {activityHistory.map((item, i) => (
+              {profile.activityHistory.map((item, i) => (
                 <Table.Tr key={i}>
                   <Table.Td>{item.action}</Table.Td>
                   <Table.Td>
@@ -142,7 +161,17 @@ function UserProfilePage() {
               <Text size="sm" c="dimmed">
                 Permanently delete your account and all associated data. This action cannot be undone.
               </Text>
-              <Button color="red" variant="outline" w="fit-content" radius="xl">
+              <Button
+                color="red"
+                variant="outline"
+                w="fit-content"
+                radius="xl"
+                onClick={async () => {
+                  if (!confirm("Are you sure? This will permanently delete your account and all data.")) return;
+                  await deleteAccount();
+                  router.navigate({ to: "/login" });
+                }}
+              >
                 Delete Account
               </Button>
             </Stack>

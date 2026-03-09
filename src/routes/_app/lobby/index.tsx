@@ -11,75 +11,86 @@ import {
   Badge,
   Button,
   ActionIcon,
+  Modal,
+  Textarea,
 } from "@mantine/core";
 import { IconSearch, IconArrowUp, IconPlus } from "@tabler/icons-react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { TAG_COLORS } from "../../../features/lobby/lobby.constants.ts";
-
-const posts = [
-  {
-    id: "1",
-    title: "Best study spots in the dorm?",
-    author: "Maria Santos",
-    snippet: "I've been looking for quiet places to study after 9 PM. Any suggestions from fellow residents?",
-    upvotes: 24,
-    comments: 8,
-    tag: "Discussion",
-    time: "2 hours ago",
-  },
-  {
-    id: "2",
-    title: "Wi-Fi Issues on Floor 3",
-    author: "Juan Reyes",
-    snippet: "Anyone else experiencing slow internet on the 3rd floor? It's been like this for a week now.",
-    upvotes: 42,
-    comments: 15,
-    tag: "Issue",
-    time: "5 hours ago",
-  },
-  {
-    id: "3",
-    title: "Movie night this Saturday!",
-    author: "Ava Cruz",
-    snippet: "We're organizing a movie night in the common area. Bring snacks! Vote for the movie below.",
-    upvotes: 67,
-    comments: 23,
-    tag: "Event",
-    time: "1 day ago",
-  },
-  {
-    id: "4",
-    title: "Lost AirPods in laundry room",
-    author: "Carlos Lim",
-    snippet:
-      "Left my AirPods Pro in the 2nd floor laundry room yesterday. White case with a blue sticker. Please DM if found!",
-    upvotes: 11,
-    comments: 3,
-    tag: "Lost & Found",
-    time: "1 day ago",
-  },
-] as const;
+import { createThread, getThreads } from "../../../server/threads.ts";
 
 export const Route = createFileRoute("/_app/lobby/")({
   head: () => ({ meta: [{ title: "Lobby | Adormable" }] }),
+  loader: () => getThreads(),
   component: ForumFeedPage,
 });
 
 function ForumFeedPage() {
+  const posts = Route.useLoaderData();
+  const router = useRouter();
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<string | null>("Newest");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newContent, setNewContent] = useState("");
+  const [newTag, setNewTag] = useState<string | null>(null);
 
-  const filtered = posts.filter(
-    (p) =>
-      p.title.toLowerCase().includes(search.toLowerCase()) || p.snippet.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = posts
+    .filter(
+      (p) =>
+        p.title.toLowerCase().includes(search.toLowerCase()) || p.snippet.toLowerCase().includes(search.toLowerCase()),
+    )
+    .sort((a, b) => (sort === "Most Popular" ? b.upvotes - a.upvotes : 0));
 
   return (
     <Container size="md" py="xl">
+      <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title="Create New Post" centered>
+        <Stack>
+          <TextInput
+            label="Title"
+            placeholder="Post title"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.currentTarget.value)}
+          />
+          <Select
+            label="Tag"
+            placeholder="Select tag"
+            data={Object.keys(TAG_COLORS)}
+            value={newTag}
+            onChange={setNewTag}
+          />
+          <Textarea
+            label="Content"
+            placeholder="Write your post..."
+            minRows={4}
+            value={newContent}
+            onChange={(e) => setNewContent(e.currentTarget.value)}
+          />
+          <Group justify="flex-end">
+            <Button
+              color="pink"
+              radius="xl"
+              onClick={async () => {
+                if (!newTitle.trim() || !newContent.trim()) return;
+                await createThread({ data: { title: newTitle, content: newContent, tag: newTag ?? undefined } });
+                setNewTitle("");
+                setNewContent("");
+                setNewTag(null);
+                setModalOpen(false);
+                router.invalidate();
+              }}
+            >
+              Create Post
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
       <Group justify="space-between" mb="xs">
         <Title className="page-title">The Virtual Lobby</Title>
-        <Button leftSection={<IconPlus size={16} />} color="pink" radius="xl">
+        <Button leftSection={<IconPlus size={16} />} color="pink" radius="xl" onClick={() => setModalOpen(true)}>
           New Post
         </Button>
       </Group>
@@ -96,7 +107,7 @@ function ForumFeedPage() {
             setSearch(e.currentTarget.value);
           }}
         />
-        <Select placeholder="Sort by" data={["Newest", "Most Popular"]} defaultValue="Newest" />
+        <Select placeholder="Sort by" data={["Newest", "Most Popular"]} value={sort} onChange={setSort} />
       </Group>
 
       <Stack>
@@ -122,7 +133,7 @@ function ForumFeedPage() {
                 <Stack gap={2}>
                   <Group gap="xs">
                     <Text fw={600}>{post.title}</Text>
-                    <Badge color={TAG_COLORS[post.tag]} size="sm" variant="light">
+                    <Badge color={TAG_COLORS[post.tag as keyof typeof TAG_COLORS]} size="sm" variant="light">
                       {post.tag}
                     </Badge>
                   </Group>
