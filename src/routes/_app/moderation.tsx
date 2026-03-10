@@ -109,7 +109,6 @@ function ForumModerationPage() {
               <Group justify="space-between" wrap="wrap">
                 <Group>
                   <Avatar color="red" radius="xl" size="sm">
-                    {/* oxlint-disable-next-line no-magic-numbers */}
                     {post.author.slice(0, 2).toUpperCase()}
                   </Avatar>
                   <Stack gap={2}>
@@ -190,7 +189,7 @@ function ForumModerationPage() {
             color="red"
             radius="xl"
             onClick={async () => {
-              if (!banUser || !banDuration) return;
+              if (banUser == null || banDuration == null) {return;}
               await createBan({
                 data: { userId: banUser, reason: "Manual ban", durationDays: durationMap[banDuration] },
               });

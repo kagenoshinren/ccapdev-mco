@@ -16,6 +16,7 @@ export const getEstablishments = createServerFn({ method: "GET" }).handler(async
       name: e.name,
       category: e.category,
       description: e.description ?? "",
+      address: e.address ?? "",
       rating: Math.round(avg * 10) / 10,
       reviews: e.reviews.length,
       owner: e.owner.name,
@@ -37,7 +38,7 @@ export const getEstablishment = createServerFn({ method: "GET" })
       }),
       getSession(),
     ]);
-    if (!est) throw new Error("Establishment not found");
+    if (!est) {throw new Error("Establishment not found");}
 
     const avg = est.reviews.length > 0 ? est.reviews.reduce((s, r) => s + r.rating, 0) / est.reviews.length : 0;
 
@@ -62,7 +63,7 @@ export const getEstablishment = createServerFn({ method: "GET" })
   });
 
 export const createEstablishment = createServerFn({ method: "POST" })
-  .inputValidator((d: { name: string; category: string; description?: string; ownerId: string }) => d)
+  .inputValidator((d: { name: string; category: string; description?: string; address?: string; ownerId: string }) => d)
   .handler(async ({ data }) => {
     const session = await requireRole(["admin"]);
 
@@ -72,6 +73,7 @@ export const createEstablishment = createServerFn({ method: "POST" })
         name: data.name,
         category: data.category,
         description: data.description,
+        address: data.address,
         ownerId: data.ownerId,
       },
     });
@@ -90,8 +92,8 @@ export const createEstablishment = createServerFn({ method: "POST" })
 
 export const createReview = createServerFn({ method: "POST" })
   .inputValidator((d: { establishmentId: string; rating: number; content: string }) => {
-    if (d.rating < 1 || d.rating > 5) throw new Error("Rating must be 1–5");
-    if (!d.content.trim()) throw new Error("Review content is required");
+    if (d.rating < 1 || d.rating > 5) {throw new Error("Rating must be 1–5");}
+    if (!d.content.trim()) {throw new Error("Review content is required");}
     return d;
   })
   .handler(async ({ data }) => {
@@ -120,7 +122,7 @@ export const createReview = createServerFn({ method: "POST" })
 
 export const createOwnerReply = createServerFn({ method: "POST" })
   .inputValidator((d: { reviewId: string; reply: string }) => {
-    if (!d.reply.trim()) throw new Error("Reply cannot be empty");
+    if (!d.reply.trim()) {throw new Error("Reply cannot be empty");}
     return d;
   })
   .handler(async ({ data }) => {
@@ -129,8 +131,8 @@ export const createOwnerReply = createServerFn({ method: "POST" })
       where: { id: data.reviewId },
       include: { establishment: { select: { ownerId: true } } },
     });
-    if (!review) throw new Error("Review not found");
-    if (review.establishment.ownerId !== session.user.id) throw new Error("Forbidden");
+    if (!review) {throw new Error("Review not found");}
+    if (review.establishment.ownerId !== session.user.id) {throw new Error("Forbidden");}
 
     const updated = await prisma.review.update({ where: { id: data.reviewId }, data: { ownerReply: data.reply } });
 
@@ -151,7 +153,7 @@ export const deleteEstablishment = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const session = await requireRole(["admin"]);
     const est = await prisma.establishment.findUnique({ where: { id: data.establishmentId } });
-    if (!est) throw new Error("Establishment not found");
+    if (!est) {throw new Error("Establishment not found");}
 
     await prisma.establishment.delete({ where: { id: data.establishmentId } });
 
@@ -167,7 +169,7 @@ export const deleteEstablishment = createServerFn({ method: "POST" })
 
 export const updateEstablishment = createServerFn({ method: "POST" })
   .inputValidator(
-    (d: { establishmentId: string; name?: string; category?: string; description?: string; ownerId?: string }) => d,
+    (d: { establishmentId: string; name?: string; category?: string; description?: string; address?: string; ownerId?: string }) => d,
   )
   .handler(async ({ data }) => {
     const session = await requireRole(["admin"]);

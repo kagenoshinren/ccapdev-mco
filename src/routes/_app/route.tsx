@@ -19,13 +19,14 @@ export const Route = createFileRoute("/_app")({
       path.startsWith("/study-nook/") ||
       path.startsWith("/lobby/") ||
       path.startsWith("/guide/");
-    if (isPublic) return;
+    if (isPublic) {return;}
 
     const session = await getSessionFn();
     if (!session?.user) {
       throw redirect({ to: "/login" });
     }
 
+    // oxlint-disable-next-line no-unsafe-type-assertion -- Better Auth doesn't type custom user fields
     const role = (session.user as Record<string, unknown>).role as string;
 
     // Admin routes — only admin

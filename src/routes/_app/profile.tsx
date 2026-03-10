@@ -119,7 +119,7 @@ function UserProfilePage() {
           <Button
             color="red"
             onClick={async () => {
-              if (deleteResId) {
+              if (deleteResId != null) {
                 await cancelReservation({ data: { reservationId: deleteResId } });
                 void router.invalidate();
               }
@@ -197,8 +197,8 @@ function UserProfilePage() {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {profile.activityHistory.map((item, i) => (
-                <Table.Tr key={i}>
+              {profile.activityHistory.map((item) => (
+                <Table.Tr key={item.id}>
                   <Table.Td>{item.action}</Table.Td>
                   <Table.Td>
                     <Badge color={typeColors[item.type]} variant="light" size="sm">
@@ -231,7 +231,7 @@ function UserProfilePage() {
                 w="fit-content"
                 radius="xl"
                 onClick={async () => {
-                  if (!confirm("Are you sure? This will permanently delete your account and all data.")) return;
+                  if (!confirm("Are you sure? This will permanently delete your account and all data.")) {return;}
                   await deleteAccount();
                   void router.navigate({ to: "/login" });
                 }}

@@ -9,7 +9,7 @@ export const getZones = createServerFn({ method: "GET" }).handler(async () => {
   });
   return zones.map((z) => {
     const available = z.seats.filter((s) => !s.isTaken).length;
-    const capacity = z.capacity;
+    const {capacity} = z;
     return {
       id: z.id,
       name: z.name,
@@ -27,7 +27,7 @@ export const getZone = createServerFn({ method: "GET" })
       where: { id: data.zoneId },
       include: { seats: { orderBy: { label: "asc" } } },
     });
-    if (!zone) throw new Error("Zone not found");
+    if (!zone) {throw new Error("Zone not found");}
 
     return {
       id: zone.id,

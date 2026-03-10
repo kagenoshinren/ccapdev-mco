@@ -31,6 +31,7 @@ import {
   voteThread,
   voteComment,
   deleteThread,
+  deleteComment,
   updateThread,
 } from "../../../server/threads.ts";
 
@@ -137,7 +138,7 @@ function ThreadViewPage() {
               color="red"
               radius="xl"
               onClick={async () => {
-                if (!reportReason.trim()) return;
+                if (!reportReason.trim()) {return;}
                 await createReport({ data: { ...reportTarget, reason: reportReason } });
                 setReportOpen(false);
                 setReportReason("");
@@ -164,7 +165,7 @@ function ThreadViewPage() {
             <Stack gap={2}>
               <Group gap="xs">
                 <Text fw={700}>{data.title}</Text>
-                <Badge color={TAG_COLORS[data.tag as keyof typeof TAG_COLORS] ?? "gray"} size="sm" variant="light">
+                <Badge color={TAG_COLORS[data.tag] ?? "gray"} size="sm" variant="light">
                   {data.tag}
                 </Badge>
               </Group>
@@ -190,7 +191,7 @@ function ThreadViewPage() {
                 color="red"
                 size="sm"
                 onClick={async () => {
-                  if (!confirm("Delete this thread?")) return;
+                  if (!confirm("Delete this thread?")) {return;}
                   await deleteThread({ data: { threadId: data.id } });
                   void router.navigate({ to: "/lobby" });
                 }}
@@ -256,7 +257,7 @@ function ThreadViewPage() {
           color="pink"
           radius="xl"
           onClick={async () => {
-            if (!replyContent.trim()) return;
+            if (!replyContent.trim()) {return;}
             await createComment({ data: { threadId: data.id, content: replyContent } });
             setReplyContent("");
             void router.invalidate();
@@ -324,6 +325,20 @@ function ThreadViewPage() {
                   <IconFlag size={12} />
                 </ActionIcon>
               )}
+              {comment.isAuthor && (
+                <ActionIcon
+                  variant="subtle"
+                  size="xs"
+                  color="red"
+                  onClick={async () => {
+                    if (!confirm("Delete this comment?")) {return;}
+                    await deleteComment({ data: { commentId: comment.id } });
+                    void router.invalidate();
+                  }}
+                >
+                  <IconTrash size={12} />
+                </ActionIcon>
+              )}
             </Group>
             {commentReplyId === comment.id && (
               <Stack mt="xs" gap="xs">
@@ -342,7 +357,7 @@ function ThreadViewPage() {
                     color="pink"
                     radius="xl"
                     onClick={async () => {
-                      if (!commentReplyContent.trim()) return;
+                      if (!commentReplyContent.trim()) {return;}
                       await createComment({
                         data: { threadId: data.id, content: commentReplyContent, parentId: comment.id },
                       });

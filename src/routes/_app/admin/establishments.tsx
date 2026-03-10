@@ -60,7 +60,7 @@ function EstablishmentManagerPage() {
 
   const filteredEstablishments = establishments.filter(
     (e) =>
-      e.name.toLowerCase().includes(search.toLowerCase()) || e.category.toLowerCase().includes(search.toLowerCase()),
+      e.name.toLowerCase().includes(search.toLowerCase()) ?? e.category.toLowerCase().includes(search.toLowerCase()),
   );
 
   const resetForm = () => {
@@ -142,6 +142,7 @@ function EstablishmentManagerPage() {
                         setName(est.name);
                         setCategory(est.category);
                         setDescription(est.description);
+                        setAddress(est.address);
                         setOwnerId(null);
                         formRef.current?.scrollIntoView({ behavior: "smooth" });
                       }}
@@ -169,6 +170,7 @@ function EstablishmentManagerPage() {
                         setName(est.name);
                         setCategory(est.category);
                         setDescription(est.description);
+                        setAddress(est.address);
                         setOwnerId(null);
                         formRef.current?.scrollIntoView({ behavior: "smooth" });
                       }}
@@ -212,7 +214,7 @@ function EstablishmentManagerPage() {
 
       <Paper shadow="md" p="lg" radius="md" className="content-card" mt="xl" ref={formRef}>
         <Title order={4} mb="md">
-          {editId ? "Edit Establishment" : "Add New Establishment"}
+          {editId == null ? "Add New Establishment" : "Edit Establishment"}
         </Title>
         <img src={placeholder} alt="Preview" className={imgStyles.previewImage} />
         <Stack>
@@ -268,29 +270,30 @@ function EstablishmentManagerPage() {
               color="pink"
               radius="xl"
               onClick={async () => {
-                if (editId) {
+                if (editId == null) {
+                  if (!name || category == null || ownerId == null) {return;}
+                  await createEstablishment({ data: { name, category, description, address, ownerId } });
+                } else {
                   await updateEstablishment({
                     data: {
                       establishmentId: editId,
                       name: name || undefined,
-                      category: category || undefined,
+                      category: category ?? undefined,
                       description: description || undefined,
-                      ownerId: ownerId || undefined,
+                      address: address || undefined,
+                      ownerId: ownerId ?? undefined,
                     },
                   });
-                } else {
-                  if (!name || !category || !ownerId) return;
-                  await createEstablishment({ data: { name, category, description, ownerId } });
                 }
                 resetForm();
-                setSuccessMsg(editId ? "Establishment updated!" : "Establishment added!");
+                setSuccessMsg(editId == null ? "Establishment added!" : "Establishment updated!");
                 setTimeout(() => {
                   setSuccessMsg("");
                 }, FEEDBACK_TIMEOUT_MS);
                 void router.invalidate();
               }}
             >
-              {editId ? "Save Changes" : "Save Establishment"}
+              {editId == null ? "Save Establishment" : "Save Changes"}
             </Button>
           </Group>
           {successMsg && (

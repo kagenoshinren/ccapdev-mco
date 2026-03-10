@@ -7,7 +7,7 @@ import { categorizeAction } from "./utils.ts";
 export const getUserProfile = createServerFn({ method: "GET" }).handler(async () => {
   const session = await requireSession();
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  if (!user) throw new Error("User not found");
+  if (!user) {throw new Error("User not found");}
 
   const reservations = await prisma.reservation.findMany({
     where: { userId: user.id, status: { not: "cancelled" } },
@@ -35,6 +35,7 @@ export const getUserProfile = createServerFn({ method: "GET" }).handler(async ()
       status: r.status.charAt(0).toUpperCase() + r.status.slice(1),
     })),
     activityHistory: logs.map((l) => ({
+      id: l.id,
       action: l.detail ?? l.action,
       date: l.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
       type: categorizeAction(l.action),

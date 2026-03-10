@@ -54,7 +54,7 @@ function ReservationPage() {
     currentLetter = letter;
     currentRow.push(seat);
   }
-  if (currentRow.length > 0) seatRows.push(currentRow);
+  if (currentRow.length > 0) {seatRows.push(currentRow);}
 
   return (
     <Container size="lg" py="xl">
@@ -88,8 +88,8 @@ function ReservationPage() {
               </Group>
             </Group>
             <Stack gap="xs" align="center">
-              {seatRows.map((row, ri) => (
-                <Group key={ri} gap="xs">
+              {seatRows.map((row) => (
+                <Group key={row[0].label.charAt(0)} gap="xs">
                   <Text size="xs" w={20} fw={600}>
                     {row[0].label.charAt(0)}
                   </Text>
@@ -193,11 +193,11 @@ function ReservationPage() {
               )}
               <Button
                 fullWidth
-                disabled={selectedSeat == null || !selectedStartTime || !selectedEndTime}
+                disabled={selectedSeat == null || selectedStartTime == null || selectedEndTime == null}
                 color="pink"
                 radius="xl"
                 onClick={async () => {
-                  if (!selectedSeat || !selectedStartTime || !selectedEndTime) return;
+                  if (selectedSeat == null || selectedStartTime == null || selectedEndTime == null) {return;}
                   const baseDate = new Date();
                   baseDate.setDate(baseDate.getDate() + ((selectedDay - baseDate.getDay() + 7) % 7 || 7));
                   const dateStr = baseDate.toISOString().slice(0, 10);
@@ -229,7 +229,7 @@ function to24h(time: string): string {
   const [rawTime, period] = time.split(" ");
   const [h, m] = rawTime.split(":").map(Number);
   let hour = h;
-  if (period === "PM" && h !== 12) hour += 12;
-  if (period === "AM" && h === 12) hour = 0;
+  if (period === "PM" && h !== 12) {hour += 12;}
+  if (period === "AM" && h === 12) {hour = 0;}
   return `${String(hour).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }

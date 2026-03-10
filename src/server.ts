@@ -4,8 +4,8 @@ import { auth } from "./lib/auth.ts";
 
 const tanstackHandler = createStartHandler(defaultStreamHandler);
 
-export default {
-  async fetch(request: Request) {
+const server = {
+  fetch(request: Request) {
     const url = new URL(request.url);
 
     if (url.pathname.startsWith("/api/auth")) {
@@ -15,3 +15,5 @@ export default {
     return tanstackHandler(request);
   },
 };
+
+export default server;

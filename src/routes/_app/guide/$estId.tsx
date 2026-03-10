@@ -118,7 +118,7 @@ function EstablishmentDetailsPage() {
             placeholder="Share your experience..."
             minRows={4}
             value={reviewContent}
-            onChange={(e) => setReviewContent(e.currentTarget.value)}
+            onChange={(e) =>{  setReviewContent(e.currentTarget.value); }}
           />
           <Group>
             <FileInput placeholder="Upload images" leftSection={<IconPhoto size={16} />} accept="image/*" multiple />
@@ -126,7 +126,7 @@ function EstablishmentDetailsPage() {
               color="pink"
               radius="xl"
               onClick={async () => {
-                if (!reviewRating || !reviewContent.trim()) return;
+                if (!reviewRating || !reviewContent.trim()) {return;}
                 await createReview({ data: { establishmentId: estId, rating: reviewRating, content: reviewContent } });
                 setReviewRating(0);
                 setReviewContent("");
@@ -205,7 +205,7 @@ function EstablishmentDetailsPage() {
                     size="xs"
                     style={{ flex: 1 }}
                     value={replyText[review.id] ?? ""}
-                    onChange={(e) => setReplyText((prev) => ({ ...prev, [review.id]: e.currentTarget.value }))}
+                    onChange={(e) =>{  setReplyText((prev) => ({ ...prev, [review.id]: e.currentTarget.value })); }}
                   />
                   <Button
                     size="xs"
@@ -213,7 +213,7 @@ function EstablishmentDetailsPage() {
                     color="pink"
                     onClick={async () => {
                       const text = replyText[review.id]?.trim();
-                      if (!text) return;
+                      if (!text) {return;}
                       await createOwnerReply({ data: { reviewId: review.id, reply: text } });
                       setReplyText((prev) => ({ ...prev, [review.id]: "" }));
                       void router.invalidate();

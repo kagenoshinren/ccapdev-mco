@@ -10,6 +10,11 @@ import {
   TextInput,
   ActionIcon,
   Title,
+  Modal,
+  Button,
+  Stack,
+  NumberInput,
+  Textarea,
 } from "@mantine/core";
 import {
   IconUsers,
@@ -54,10 +59,13 @@ function AdminControlPanelPage() {
   const { stats, users } = Route.useLoaderData();
   const router = useRouter();
   const [userSearch, setUserSearch] = useState("");
+  const [banTarget, setBanTarget] = useState<{ id: string; name: string } | null>(null);
+  const [banReason, setBanReason] = useState("Admin action");
+  const [banDuration, setBanDuration] = useState<number>(7);
 
   const filteredUsers = users.filter(
     (u) =>
-      u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+      u.name.toLowerCase().includes(userSearch.toLowerCase()) ??
       u.email.toLowerCase().includes(userSearch.toLowerCase()),
   );
 
@@ -113,6 +121,7 @@ function AdminControlPanelPage() {
                   </Text>
                 </Table.Td>
                 <Table.Td>
+                  {/* oxlint-disable-next-line no-unsafe-type-assertion -- role comes from DB, always valid */}
                   <Badge color={ROLE_COLORS[user.role as UserRole]} variant="light" size="sm">
                     {user.role}
                   </Badge>
@@ -130,8 +139,8 @@ function AdminControlPanelPage() {
                       color="pink"
                       aria-label="Cycle role"
                       onClick={async () => {
-                        const nextRole =
-                          user.role === "resident" ? "concierge" : user.role === "concierge" ? "admin" : "resident";
+                        const ROLE_ORDER: Record<string, string> = { resident: "concierge", concierge: "admin", admin: "resident" };
+                        const nextRole = ROLE_ORDER[user.role] ?? "resident";
                         await updateUserRole({ data: { userId: user.id, role: nextRole } });
                         void router.invalidate();
                       }}
@@ -158,9 +167,10 @@ function AdminControlPanelPage() {
                         size="sm"
                         color="red"
                         aria-label="Ban user"
-                        onClick={async () => {
-                          await createBan({ data: { userId: user.id, reason: "Admin action", durationDays: 7 } });
-                          void router.invalidate();
+                        onClick={() => {
+                          setBanTarget({ id: user.id, name: user.name });
+                          setBanReason("Admin action");
+                          setBanDuration(7);
                         }}
                       >
                         <IconBan size={14} />
@@ -173,6 +183,60 @@ function AdminControlPanelPage() {
           </Table.Tbody>
         </Table>
       </Paper>
+
+      {/* Ban Confirmation Modal */}
+      <Modal
+        opened={banTarget != null}
+        onClose={() => {
+          setBanTarget(null);
+        }}
+        title="Ban User"
+        centered
+      >
+        <Stack>
+          <Text size="sm">
+            Ban <b>{banTarget?.name}</b>?
+          </Text>
+          <Textarea
+            label="Reason"
+            placeholder="Reason for ban"
+            value={banReason}
+            onChange={(e) => {
+              setBanReason(e.currentTarget.value);
+            }}
+          />
+          <NumberInput
+            label="Duration (days)"
+            min={1}
+            value={banDuration}
+            onChange={(v) => {
+              setBanDuration(typeof v === "number" ? v : 7);
+            }}
+          />
+          <Group justify="flex-end">
+            <Button
+              variant="light"
+              color="gray"
+              onClick={() => {
+                setBanTarget(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              onClick={async () => {
+                if (banTarget == null) {return;}
+                await createBan({ data: { userId: banTarget.id, reason: banReason, durationDays: banDuration } });
+                setBanTarget(null);
+                void router.invalidate();
+              }}
+            >
+              Confirm Ban
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
 
       <Paper shadow="md" p="lg" radius="md" className="content-card">
         <Title order={4} mb="md">

@@ -143,7 +143,7 @@ export function Header({ isBurgerOpen, onSidebarToggle }: Readonly<HeaderProps>)
               <Button variant="default" radius="xl" component={Link} to="/login" size="sm">
                 Log In
               </Button>
-              <LinkButton color="pink" radius="xl" to="/signup" size="sm">
+              <LinkButton color="pink" radius="xl" to="/login" search={{ register: "true" }} size="sm">
                 Register
               </LinkButton>
             </>

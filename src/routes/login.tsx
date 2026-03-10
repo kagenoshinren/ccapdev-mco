@@ -61,12 +61,12 @@ function LoginRegisterPage() {
   const registerForm = useForm({
     initialValues: { firstName: "", lastName: "", email: "", password: "", confirmPassword: "" },
     validate: {
-      firstName: (v: string) => (v.trim().length < 1 ? "First name is required" : null),
-      lastName: (v: string) => (v.trim().length < 1 ? "Last name is required" : null),
+      firstName: (v: string) => (v.trim().length === 0 ? "First name is required" : null),
+      lastName: (v: string) => (v.trim().length === 0 ? "Last name is required" : null),
       email: (v: string) => (/^\S+@\S+\.\S+$/.test(v) ? null : "Invalid email"),
       password: (v: string) => (v.length < 8 ? "Password must be at least 8 characters" : null),
       confirmPassword: (v: string, values: { password: string }) =>
-        v !== values.password ? "Passwords do not match" : null,
+        v === values.password ? null : "Passwords do not match",
     },
   });
 

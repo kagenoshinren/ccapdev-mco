@@ -10,8 +10,8 @@ async function main(): Promise<void> {
 
   // ── Users
   // Note: auth users are created via Better Auth signUp, but we can
-  // insert directly for dev/test purposes. Passwords would need to be
-  // hashed by Better Auth. These are for TESTING relations ONLY !!!
+  // Insert directly for dev/test purposes. Passwords would need to be
+  // Hashed by Better Auth. These are for TESTING relations ONLY !!!
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@adormable.com" },
@@ -83,22 +83,26 @@ async function main(): Promise<void> {
 
   // Seats for Quiet Room
   const seatLabels = ["A1", "A2", "A3", "A4", "A5", "B1", "B2", "B3", "B4", "B5"];
-  for (const label of seatLabels) {
-    await prisma.seat.upsert({
-      where: { id: `seat-quiet-${label}` },
-      update: {},
-      create: { id: `seat-quiet-${label}`, zoneId: quietRoom.id, label },
-    });
-  }
+  await Promise.all(
+    seatLabels.map((label) =>
+      prisma.seat.upsert({
+        where: { id: `seat-quiet-${label}` },
+        update: {},
+        create: { id: `seat-quiet-${label}`, zoneId: quietRoom.id, label },
+      }),
+    ),
+  );
 
   // Seats for Main Hall
-  for (let i = 1; i <= 12; i++) {
-    await prisma.seat.upsert({
-      where: { id: `seat-main-${i}` },
-      update: {},
-      create: { id: `seat-main-${i}`, zoneId: mainHall.id, label: `${i}` },
-    });
-  }
+  await Promise.all(
+    Array.from({ length: 12 }, (_, i) => i + 1).map((i) =>
+      prisma.seat.upsert({
+        where: { id: `seat-main-${i}` },
+        update: {},
+        create: { id: `seat-main-${i}`, zoneId: mainHall.id, label: `${i}` },
+      }),
+    ),
+  );
 
   // Reservations
 
@@ -242,9 +246,11 @@ async function main(): Promise<void> {
   console.log("Seeding complete!");
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+try {
+  await main();
+} catch (error) {
+  console.error(error);
+  process.exit(1);
+} finally {
+  await prisma.$disconnect();
+}

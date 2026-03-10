@@ -4,10 +4,10 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 
 // Stub server-only local modules in the client bundle.
-// createServerFn replaces handler bodies with RPC stubs on the client,
-// but top-level imports remain.  Stubbing these two files cuts off
-// the entire Prisma + Better-Auth server dependency tree so Rollup
-// never tries to bundle Node built-ins from @prisma/client/runtime.
+// CreateServerFn replaces handler bodies with RPC stubs on the client,
+// But top-level imports remain.  Stubbing these two files cuts off
+// The entire Prisma + Better-Auth server dependency tree so Rollup
+// Never tries to bundle Node built-ins from @prisma/client/runtime.
 const SERVER_STUBS: Record<string, string> = {
   "/src/db.ts": "export const prisma = {};",
   "/src/lib/auth.ts": "export const auth = {};",
@@ -18,9 +18,9 @@ function serverOnlyStubPlugin(): Plugin {
     name: "server-only-stub",
     enforce: "pre",
     load(id) {
-      if (this.environment?.name !== "client") return null;
+      if (this.environment?.name !== "client") {return null;}
       for (const [suffix, code] of Object.entries(SERVER_STUBS)) {
-        if (id.endsWith(suffix)) return code;
+        if (id.endsWith(suffix)) {return code;}
       }
       return null;
     },
@@ -33,22 +33,25 @@ function betterAuthVitePlugin(): Plugin {
   return {
     name: "better-auth-api",
     configureServer(server) {
+      // oxlint-disable-next-line no-async-endpoint-handlers, no-misused-promises
       server.middlewares.use(async (req, res, next) => {
-        if (!req.url?.startsWith("/api/auth")) return next();
+        if (req.url == null || !req.url.startsWith("/api/auth")) { next(); return;}
 
-        const { auth } = (await server.ssrLoadModule("/src/lib/auth.ts")) as typeof import("./src/lib/auth.ts");
+        // oxlint-disable-next-line no-unsafe-type-assertion, consistent-type-imports
+        const { auth } = (await server.ssrLoadModule("/src/lib/auth.ts")) as { auth: typeof import("./src/lib/auth.ts")["auth"] };
 
-        const proto = (req.headers["x-forwarded-proto"] as string | undefined) ?? "http";
+        const proto = req.headers["x-forwarded-proto"]?.toString() ?? "http";
         const host = req.headers.host ?? "localhost:5173";
         const url = new URL(req.url, `${proto}://${host}`);
 
         const bodyChunks: Buffer[] = [];
-        for await (const chunk of req) bodyChunks.push(chunk as Buffer);
+        // oxlint-disable-next-line no-unsafe-type-assertion
+        for await (const chunk of req) {bodyChunks.push(chunk as Buffer);}
         const body = Buffer.concat(bodyChunks);
 
         const headers = new Headers();
         for (const [key, val] of Object.entries(req.headers)) {
-          if (val) headers.set(key, Array.isArray(val) ? val.join(", ") : val);
+          if (val != null) {headers.set(key, Array.isArray(val) ? val.join(", ") : val);}
         }
 
         const webReq = new Request(url, {

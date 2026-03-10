@@ -16,11 +16,10 @@ import {
   Tabs,
   Progress,
   Paper,
-  ColorSwatch,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconArrowUp, IconPlus, IconSettings, IconEye } from "@tabler/icons-react";
+import { IconArrowUp, IconPlus, IconEye } from "@tabler/icons-react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -28,8 +27,7 @@ import emptyState from "../../../assets/features/empty-state.svg";
 import { EmptyState } from "../../../components/empty-state.tsx";
 import { SearchBar } from "../../../components/search-bar.tsx";
 import { SectionHeader } from "../../../components/section-header.tsx";
-import { useAuth } from "../../../contexts/auth-context.tsx";
-import { TAG_COLORS, DEFAULT_TAGS, CATEGORY_COLOR_OPTIONS } from "../../../features/lobby/lobby.constants.ts";
+import { TAG_COLORS, DEFAULT_TAGS } from "../../../features/lobby/lobby.constants.ts";
 import { createThread, getThreads } from "../../../server/threads.ts";
 
 const MAX_CONTENT_LENGTH = 2000;
@@ -43,36 +41,31 @@ export const Route = createFileRoute("/_app/lobby/")({
 function ForumFeedPage() {
   const posts = Route.useLoaderData();
   const router = useRouter();
-  const { role } = useAuth();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<string | null>("Newest");
   const [activeTag, setActiveTag] = useState<string>("All");
 
   const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
-  const [catOpened, { open: openCat, close: closeCat }] = useDisclosure(false);
   const [previewTab, setPreviewTab] = useState<string | null>("write");
 
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newTag, setNewTag] = useState<string | null>(null);
 
-  const [categories, setCategories] = useState(DEFAULT_TAGS);
-  const [newCatName, setNewCatName] = useState("");
-  const [newCatColor, setNewCatColor] = useState<string | null>(null);
-
-  const allTags = ["All", ...categories.map((c) => c.name)];
+  const allTags = ["All", ...DEFAULT_TAGS.map((c) => c.name)];
 
   const filtered = posts
     .filter((p) => {
       const matchSearch =
-        p.title.toLowerCase().includes(search.toLowerCase()) || p.snippet.toLowerCase().includes(search.toLowerCase());
+        p.title.toLowerCase().includes(search.toLowerCase()) ?? p.snippet.toLowerCase().includes(search.toLowerCase());
       const matchTag = activeTag === "All" || p.tag === activeTag;
       return matchSearch && matchTag;
     })
+    // oxlint-disable-next-line no-array-sort -- filter() already creates a new array
     .sort((a, b) => (sort === "Most Popular" ? b.upvotes - a.upvotes : 0));
 
   const handleCreate = async () => {
-    if (!newTitle.trim() || !newContent.trim()) return;
+    if (!newTitle.trim() || !newContent.trim()) {return;}
     await createThread({ data: { title: newTitle, content: newContent, tag: newTag ?? undefined } });
     setNewTitle("");
     setNewContent("");
@@ -81,8 +74,6 @@ function ForumFeedPage() {
     notifications.show({ title: "Post created!", message: "Your post is now live.", color: "green" });
     void router.invalidate();
   };
-
-  const isPrivileged = role === "admin" || role === "concierge";
 
   return (
     <Container size="md" py="xl">
@@ -109,7 +100,7 @@ function ForumFeedPage() {
               <Select
                 label="Tag"
                 placeholder="Select tag"
-                data={categories.map((c) => c.name)}
+                data={DEFAULT_TAGS.map((c) => c.name)}
                 value={newTag}
                 onChange={setNewTag}
               />
@@ -135,7 +126,7 @@ function ForumFeedPage() {
                 />
               </Group>
               <Group justify="flex-end">
-                <Button color="pink" radius="xl" onClick={handleCreate}>
+                <Button color="pink" radius="xl" onClick={() => { void handleCreate(); }}>
                   Create Post
                 </Button>
               </Group>
@@ -147,8 +138,8 @@ function ForumFeedPage() {
               <Text fw={700} size="lg" mb="xs">
                 {newTitle || "Untitled"}
               </Text>
-              {newTag && (
-                <Badge color={TAG_COLORS[newTag as keyof typeof TAG_COLORS]} variant="light" mb="sm">
+              {newTag != null && (
+                <Badge color={TAG_COLORS[newTag] ?? "gray"} variant="light" mb="sm">
                   {newTag}
                 </Badge>
               )}
@@ -160,57 +151,6 @@ function ForumFeedPage() {
         </Tabs>
       </Modal>
 
-      {/* Category Management Modal (admin/concierge) */}
-      <Modal opened={catOpened} onClose={closeCat} title="Manage Categories">
-        <Stack>
-          {categories.map((cat) => (
-            <Group key={cat.name} justify="space-between">
-              <Group gap="xs">
-                <ColorSwatch color={`var(--mantine-color-${cat.color}-5)`} size={16} />
-                <Text size="sm">{cat.name}</Text>
-              </Group>
-              <Button
-                size="xs"
-                variant="subtle"
-                color="red"
-                onClick={() => {
-                  setCategories((prev) => prev.filter((c) => c.name !== cat.name));
-                }}
-              >
-                Remove
-              </Button>
-            </Group>
-          ))}
-          <TextInput
-            label="New Category"
-            placeholder="Category name"
-            value={newCatName}
-            onChange={(e) => {
-              setNewCatName(e.currentTarget.value);
-            }}
-          />
-          <Select
-            label="Color"
-            data={CATEGORY_COLOR_OPTIONS}
-            value={newCatColor}
-            onChange={setNewCatColor}
-            placeholder="Pick a color"
-          />
-          <Button
-            color="pink"
-            onClick={() => {
-              if (newCatName.trim() && newCatColor) {
-                setCategories((prev) => [...prev, { name: newCatName.trim(), color: newCatColor }]);
-                setNewCatName("");
-                setNewCatColor(null);
-              }
-            }}
-          >
-            Add Category
-          </Button>
-        </Stack>
-      </Modal>
-
       <Group justify="space-between" mb="xs">
         <SectionHeader
           title="The Virtual Lobby"
@@ -219,11 +159,6 @@ function ForumFeedPage() {
           mb="xs"
         />
         <Group>
-          {isPrivileged && (
-            <Button variant="light" color="gray" leftSection={<IconSettings size={16} />} radius="xl" onClick={openCat}>
-              Categories
-            </Button>
-          )}
           <Button leftSection={<IconPlus size={16} />} color="pink" radius="xl" onClick={openCreate}>
             New Post
           </Button>
@@ -254,7 +189,7 @@ function ForumFeedPage() {
               key={tag}
               value={tag}
               variant="light"
-              color={tag === "All" ? "gray" : (TAG_COLORS[tag as keyof typeof TAG_COLORS] ?? "gray")}
+              color={tag === "All" ? "gray" : (TAG_COLORS[tag] ?? "gray")}
               size="sm"
             >
               {tag}
@@ -288,7 +223,7 @@ function ForumFeedPage() {
                 <Stack gap={2}>
                   <Group gap="xs">
                     <Text fw={600}>{post.title}</Text>
-                    <Badge color={TAG_COLORS[post.tag as keyof typeof TAG_COLORS] ?? "gray"} size="sm" variant="light">
+                    <Badge color={TAG_COLORS[post.tag] ?? "gray"} size="sm" variant="light">
                       {post.tag}
                     </Badge>
                   </Group>

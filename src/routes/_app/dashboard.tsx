@@ -23,9 +23,8 @@ import { getMyReservations } from "../../server/reservations.ts";
 
 import styles from "./dashboard.module.css";
 
-// oxlint-disable-next-line no-magic-numbers
 const QUICK_ACTION_ICON_BOX = rem(50);
-// oxlint-disable-next-line no-magic-numbers
+// oxlint-disable-next-line no-magic-numbers -- UI icon size constant
 const QUICK_ACTION_ICON_SIZE = rem(26);
 
 export const Route = createFileRoute("/_app/dashboard")({

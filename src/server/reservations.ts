@@ -43,10 +43,10 @@ export const createReservation = createServerFn({ method: "POST" })
     const session = await requireSession();
 
     const reservation = await prisma.$transaction(async (tx) => {
-      if (data.seatId) {
+      if (data.seatId != null) {
         const seat = await tx.seat.findUnique({ where: { id: data.seatId } });
-        if (!seat) throw new Error("Seat not found");
-        if (seat.isTaken) throw new Error("Seat is already taken");
+        if (!seat) {throw new Error("Seat not found");}
+        if (seat.isTaken) {throw new Error("Seat is already taken");}
         await tx.seat.update({ where: { id: data.seatId }, data: { isTaken: true } });
       }
 
@@ -82,13 +82,13 @@ export const cancelReservation = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const session = await requireSession();
     const reservation = await prisma.reservation.findUnique({ where: { id: data.reservationId } });
-    if (!reservation) throw new Error("Not found");
+    if (!reservation) {throw new Error("Not found");}
     if (reservation.userId !== session.user.id && !["concierge", "admin"].includes(session.user.role as string))
-      throw new Error("Forbidden");
+      {throw new Error("Forbidden");}
 
     await prisma.reservation.update({ where: { id: data.reservationId }, data: { status: "cancelled" } });
 
-    if (reservation.seatId) {
+    if (reservation.seatId != null) {
       await prisma.seat.update({ where: { id: reservation.seatId }, data: { isTaken: false } });
     }
 
@@ -103,17 +103,16 @@ export const cancelReservation = createServerFn({ method: "POST" })
   });
 
 export const purgeExpiredReservations = createServerFn({ method: "POST" }).handler(async () => {
-  const session = await requireSession();
-  if (!["concierge", "admin"].includes(session.user.role as string)) throw new Error("Forbidden");
+  const session = await requireRole(["concierge", "admin"]);
 
   const now = new Date();
   const expired = await prisma.reservation.findMany({ where: { endTime: { lt: now }, status: { not: "cancelled" } } });
 
-  for (const r of expired) {
-    if (r.seatId) {
-      await prisma.seat.update({ where: { id: r.seatId }, data: { isTaken: false } });
-    }
-  }
+  await Promise.all(
+    expired
+      .filter((r): r is typeof r & { seatId: string } => r.seatId != null)
+      .map((r) => prisma.seat.update({ where: { id: r.seatId }, data: { isTaken: false } })),
+  );
 
   await prisma.reservation.updateMany({
     where: { endTime: { lt: now }, status: { not: "cancelled" } },
@@ -149,6 +148,8 @@ export const createWalkInReservation = createServerFn({ method: "POST" })
         endTime: new Date(data.endTime),
         status: "confirmed",
         isAnonymous: false,
+        studentName: data.studentName,
+        studentId: data.studentId,
       },
     });
 

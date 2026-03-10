@@ -33,7 +33,7 @@ export const getUsers = createServerFn({ method: "GET" }).handler(async () => {
 export const updateUserRole = createServerFn({ method: "POST" })
   .inputValidator((d: { userId: string; role: string }) => {
     const validRoles = ["guest", "resident", "concierge", "admin"];
-    if (!validRoles.includes(d.role)) throw new Error("Invalid role");
+    if (!validRoles.includes(d.role)) {throw new Error("Invalid role");}
     return d;
   })
   .handler(async ({ data }) => {

@@ -26,7 +26,7 @@ This branch implements the full backend layer for Adormable: database schema, us
 
 | File                             | Purpose                                                                                                                                                                             |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `prisma/schema.prisma`           | 15 MongoDB models: 4 auth (User, Session, Account, Verification) + 11 domain (StudyZone, Seat, Reservation, Establishment, Review, Thread, Comment, Vote, Report, Ban, ActivityLog) |
+| `prisma/schema.prisma`           | 15 MongoDB models: 4 auth (User, Session, Account, Verification) + 11 domain (StudyZone, Seat, Reservation, Establishment, Review, Thread, Comment, Vote, Report, Ban, ActivityLog); `Establishment` has `address String?`; `Reservation` has `studentName String?` and `studentId String?` |
 | `prisma/seed.ts`                 | Seeds dev data: 4 users, 3 zones, 22 seats, 2 reservations, 2 establishments, 2 reviews, 2 threads, 2 comments                                                                      |
 | `prisma.config.ts`               | Prisma config pointing output to `generated/prisma/client`                                                                                                                          |
 | `src/db.ts`                      | PrismaClient singleton (HMR-safe global pattern)                                                                                                                                    |
@@ -50,22 +50,22 @@ This branch implements the full backend layer for Adormable: database schema, us
 | File                                       | What changed                                                                                                                                                 |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- |
 | `vite.config.ts`                           | Added `serverOnlyStubPlugin()` + `betterAuthVitePlugin()` -- see Bundling section below for details                                                          |
-| `src/routes/login.tsx`                     | Combined login/register page with toggle; uses `authClient.signIn.email()` + `authClient.signUp.email()`, `getSessionFn()` in `beforeLoad`                   |
-| `src/routes/signup.tsx`                    | Standalone signup page (kept for backward compat); uses `authClient.signUp.email()`, `getSessionFn()` in `beforeLoad`                                        |
+| `src/routes/login.tsx`                     | Combined login/register page with toggle; uses `authClient.signIn.email()` + `authClient.signUp.email()`, `getSessionFn()` in `beforeLoad`; toggled via `?register=true` query param |
+| ~~`src/routes/signup.tsx`~~                | **Deleted** — redundant standalone signup page removed; header and sidebar links updated to `/login?register=true`                                           |
 | `src/routes/_app/route.tsx`                | Uses `getSessionFn()` in `beforeLoad` for SSR-safe auth + role gating                                                                                        |
 | `src/routes/_app/dashboard.tsx`            | Loads `getMyReservations`; Manage button links to `/profile`                                                                                                 |
 | `src/routes/_app/profile.tsx`              | Loads `getUserProfile`, calls `updateProfile`, `cancelReservation`, `deleteAccount`; Delete Account and Edit reservation wired                               |
 | `src/routes/_app/guide/$estId.tsx`         | Loads `getEstablishment`, calls `createReview`, `createOwnerReply`; Helpful thumbs-up toggle wired (client-side), owner reply inline form                    |
-| `src/routes/_app/lobby/index.tsx`          | Loads `getThreads`, calls `createThread`; New Post → modal, Sort Select wired                                                                                |
-| `src/routes/_app/lobby/$threadId.tsx`      | Loads `getThread`, calls `createComment`, `voteThread`, `voteComment`, `updateThread`, `deleteThread`, `createReport`; Edit/Delete/Reply/upvote/Report wired |
+| `src/routes/_app/lobby/index.tsx`          | Loads `getThreads`, calls `createThread`; New Post → modal, Sort Select wired; client-only category management modal removed (was non-persistent)            |
+| `src/routes/_app/lobby/$threadId.tsx`      | Loads `getThread`, calls `createComment`, `voteThread`, `voteComment`, `updateThread`, `deleteThread`, `deleteComment`, `createReport`; Edit/Delete/Reply/upvote/Report/DeleteComment wired; `isAuthor` flag from server controls comment delete button visibility |
 | `src/routes/_app/study-nook/index.tsx`     | Loads `getZones`; availability filter Select wired                                                                                                           |
 | `src/routes/_app/study-nook/$zoneId.tsx`   | Loads `getZone`, calls `createReservation`                                                                                                                   |
 | `src/routes/_app/guide/index.tsx`          | Loads `getEstablishments`; search wired                                                                                                                      |
 | `src/routes/_app/guide/$estId.tsx`         | Loads `getEstablishment`, calls `createReview`, `createOwnerReply`; owner reply form gated to owner via `isOwner` flag                                       |     |
 | `src/routes/_app/concierge.tsx`            | Loads `getAllReservations`, calls `cancelReservation`, `purgeExpiredReservations`, `createWalkInReservation`; walk-in form fully wired with state            |
 | `src/routes/_app/moderation.tsx`           | Loads `getReports`, calls `resolveReport`, `createBan`                                                                                                       |
-| `src/routes/_app/admin/index.tsx`          | Loads `getAdminStats` + `getUsers`; `updateUserRole`, `createBan` wired; search/filter users wired                                                           |
-| `src/routes/_app/admin/establishments.tsx` | Loads `getEstablishments`, calls `createEstablishment`, `deleteEstablishment`, `updateEstablishment`; search, Edit/Delete/Assign/Cancel wired                |
+| `src/routes/_app/admin/index.tsx`          | Loads `getAdminStats` + `getUsers`; `updateUserRole`, `createBan` wired; search/filter users wired; ban confirmation modal with editable reason and duration  |
+| `src/routes/_app/admin/establishments.tsx` | Loads `getEstablishments`, calls `createEstablishment`, `deleteEstablishment`, `updateEstablishment`; search, Edit/Delete/Assign/Cancel wired; `address` field wired through create/edit forms and server calls |
 | `src/routes/_app/admin/logs.tsx`           | Loads `getActivityLogs`; search + type filter wired with `useState` + `.filter()`                                                                            |
 | `package.json`                             | Added `better-auth`, `@better-auth/prisma-adapter`, `@prisma/client`, `prisma`, `dotenv`                                                                     |
 
@@ -130,11 +130,6 @@ TanStack Start's plugin (`resolveEntry`) scans `src/` for a file named `server.{
 
 ## Known limitations (future work)
 
-- **Duplicate auth pages**: `login.tsx` has a combined login/register toggle; `signup.tsx` is a standalone signup page. Both work but the architecture is redundant. See `Todo.md` R11.
-- **Category management local-only**: `lobby/index.tsx` has a Manage Categories modal but changes only live in React state — lost on reload. See `Todo.md` R12.
-- **Walk-in student info**: `createWalkInReservation()` stores student name/ID only in the activity log string, not in the Reservation model. See `Todo.md` R13.
-- **No delete comment UI**: `deleteComment` server function exists but no UI button on comments. See `Todo.md` R6.
-- **Admin ban UX**: Ban button on admin/index fires immediately with hardcoded 7-day duration. See `Todo.md` R10.
 - Filtering/sorting on list pages is client-side only (no server-side pagination yet).
 - Seed users have no password hash — they exist only to populate relations. Real test accounts must be created via Sign Up.
 - No file/image upload yet (review images, user avatars). `FileInput` on the review form and profile photo modal render but do not upload.
@@ -142,5 +137,16 @@ TanStack Start's plugin (`resolveEntry`) scans `src/` for a file named `server.{
 - `helpful` count on reviews is a client-side toggle only — no persistence model in the schema yet.
 - `admin/index.tsx` "Site Diagnostics" section shows hardcoded green badges. No real monitoring.
 - `admin/logs.tsx` "Error Logs" tab shows 4 hardcoded entries. Only the Activity Logs tab uses real data.
-- `admin/establishments.tsx` renders an address field that is never sent to the backend (Establishment model has no `address` field).
 - `login.tsx` "Remember me" checkbox renders but is non-functional.
+
+## Phase 1 fixes
+
+Following issues resolved after initial integration:
+
+- **R6 — Delete comment UI**: Added `deleteComment` call + `IconTrash` `ActionIcon` on comments, visible only when `comment.isAuthor` (flag returned by `getThread`).
+- **R9 — `purgeExpiredReservations` auth**: Replaced manual role check with `requireRole(["concierge", "admin"])`.
+- **R10 — Admin ban UX**: Ban button now opens a confirmation modal with an editable reason (`Textarea`, default `"Admin action"`) and duration (`NumberInput`, default 7 days) before firing `createBan`.
+- **R11 — Remove `signup.tsx`**: Standalone signup page deleted; header and sidebar link updated to `/login?register=true`; `route-tree.gen.ts` regenerated.
+- **R12 — Remove category management**: Client-only Manage Categories modal removed from `lobby/index.tsx` (state was lost on reload). Tag filters now use `DEFAULT_TAGS` from `lobby.constants.ts` directly.
+- **R13 — Walk-in student info in DB**: Added `studentName String?` and `studentId String?` to the `Reservation` Prisma model; `createWalkInReservation` now stores them in the database row.
+- **R14 — Establishment address**: Added `address String?` to the `Establishment` Prisma model; `getEstablishments`, `createEstablishment`, and `updateEstablishment` all handle the field; admin UI edit and create forms load and submit `address`.

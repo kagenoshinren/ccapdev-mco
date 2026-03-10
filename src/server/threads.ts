@@ -13,7 +13,7 @@ export const getThreads = createServerFn({ method: "GET" }).handler(async () => 
     id: t.id,
     title: t.title,
     author: t.author.name,
-    snippet: t.content.length > 120 ? t.content.slice(0, 120) + "…" : t.content,
+    snippet: t.content.length > 120 ? `${t.content.slice(0, 120)}…` : t.content,
     upvotes: t.upvotes,
     comments: t._count.comments,
     tag: t.tag ?? "General",
@@ -36,7 +36,7 @@ export const getThread = createServerFn({ method: "GET" })
         },
       },
     });
-    if (!thread) throw new Error("Thread not found");
+    if (!thread) {throw new Error("Thread not found");}
 
     return {
       id: thread.id,
@@ -53,6 +53,7 @@ export const getThread = createServerFn({ method: "GET" })
         time: formatRelative(c.createdAt),
         content: c.content,
         upvotes: c.upvotes,
+        isAuthor: session?.user.id === c.authorId,
         replies: c.replies.map((r) => ({
           id: r.id,
           author: r.author.name,
@@ -186,9 +187,9 @@ export const deleteThread = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const session = await requireSession();
     const thread = await prisma.thread.findUnique({ where: { id: data.threadId } });
-    if (!thread) throw new Error("Thread not found");
+    if (!thread) {throw new Error("Thread not found");}
     if (thread.authorId !== session.user.id && !["admin"].includes(session.user.role as string))
-      throw new Error("Forbidden");
+      {throw new Error("Forbidden");}
 
     await prisma.thread.delete({ where: { id: data.threadId } });
 
@@ -207,8 +208,8 @@ export const updateThread = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const session = await requireSession();
     const thread = await prisma.thread.findUnique({ where: { id: data.threadId } });
-    if (!thread) throw new Error("Thread not found");
-    if (thread.authorId !== session.user.id) throw new Error("Forbidden");
+    if (!thread) {throw new Error("Thread not found");}
+    if (thread.authorId !== session.user.id) {throw new Error("Forbidden");}
 
     const updated = await prisma.thread.update({
       where: { id: data.threadId },
@@ -232,9 +233,9 @@ export const deleteComment = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const session = await requireSession();
     const comment = await prisma.comment.findUnique({ where: { id: data.commentId } });
-    if (!comment) throw new Error("Comment not found");
+    if (!comment) {throw new Error("Comment not found");}
     if (comment.authorId !== session.user.id && !["admin"].includes(session.user.role as string))
-      throw new Error("Forbidden");
+      {throw new Error("Forbidden");}
 
     await prisma.comment.delete({ where: { id: data.commentId } });
 
