@@ -76,6 +76,13 @@ export function Sidebar({ isOpen, onToggle }: Readonly<SidebarProps>) {
               onClick={onToggle}
             />
             <NavLink
+              label="Study Zones"
+              leftSection={<IconSettings size={18} />}
+              component={Link}
+              to="/admin/zones"
+              onClick={onToggle}
+            />
+            <NavLink
               label="System Logs"
               leftSection={<IconSettings size={18} />}
               component={Link}

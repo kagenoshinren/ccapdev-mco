@@ -70,7 +70,7 @@ function AdminControlPanelPage() {
   );
 
   return (
-    <Container size="lg" py="xl">
+    <Container size="lg" py="xl" className="pageEnter">
       <Group gap="md" mb="xs">
         <Avatar src={defaultAdmin} alt="Admin" size={48} radius="xl" />
         <SectionHeader title="Admin Control Panel" description="System overview and user management." mb="xs" />

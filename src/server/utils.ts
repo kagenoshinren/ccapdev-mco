@@ -1,3 +1,18 @@
+/**
+ * Strip HTML tags from user input to prevent stored XSS.
+ * React auto-escapes JSX, but this is defense-in-depth for the DB layer.
+ */
+export function sanitize(input: string): string {
+  return input.replace(/<[^>]*>/g, "").trim();
+}
+
+/** Clamp pagination params to safe bounds. */
+export function clampPagination(page?: number, pageSize?: number): { page: number; pageSize: number } {
+  const p = Math.max(1, Math.floor(page ?? 1));
+  const ps = Math.min(100, Math.max(1, Math.floor(pageSize ?? 20)));
+  return { page: p, pageSize: ps };
+}
+
 export function formatRelative(date: Date): string {
   const now = Date.now();
   const diff = now - date.getTime();

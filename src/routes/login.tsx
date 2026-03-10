@@ -131,7 +131,7 @@ function LoginRegisterPage() {
           </Anchor>
         </Text>
 
-        <Paper withBorder shadow="md" p={30} mt={30} radius="md">
+        <Paper shadow="md" p={30} mt={30} radius="md" className={styles.formCard}>
           <form onSubmit={isRegister ? registerForm.onSubmit(handleRegister) : loginForm.onSubmit(handleLogin)}>
             <Stack>
               {error && (

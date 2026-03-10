@@ -54,7 +54,7 @@ function DashboardPage() {
   const greeting = getGreeting();
 
   return (
-    <Container size="lg" py="xl">
+    <Container size="lg" py="xl" className="pageEnter">
       <Paper shadow="sm" p="lg" radius="md" className={styles.welcomeBanner} mb="xl">
         <Group gap="md" wrap="nowrap">
           <Avatar src={defaultAvatarFemale} alt={name} size="lg" radius="xl" />

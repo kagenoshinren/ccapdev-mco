@@ -36,13 +36,13 @@ export function Footer() {
             &copy; 2026 Adormable All rights reserved.
           </Text>
           <Group gap={0} className={styles.socialsSection} justify="flex-end" wrap="nowrap">
-            <ActionIcon size="lg" color="gray" variant="subtle">
+            <ActionIcon size="lg" variant="subtle" color="blue">
               <IconBrandTwitter size={18} stroke={1.5} />
             </ActionIcon>
-            <ActionIcon size="lg" color="gray" variant="subtle">
+            <ActionIcon size="lg" variant="subtle" color="indigo">
               <IconBrandFacebook size={18} stroke={1.5} />
             </ActionIcon>
-            <ActionIcon size="lg" color="gray" variant="subtle">
+            <ActionIcon size="lg" variant="subtle" color="grape">
               <IconBrandInstagram size={18} stroke={1.5} />
             </ActionIcon>
           </Group>

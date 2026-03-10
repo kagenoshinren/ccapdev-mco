@@ -113,6 +113,9 @@ export function Header({ isBurgerOpen, onSidebarToggle }: Readonly<HeaderProps>)
                 <Menu.Item leftSection={<IconSettings size={16} />} component={Link} to="/admin/establishments">
                   Establishments
                 </Menu.Item>
+                <Menu.Item leftSection={<IconSettings size={16} />} component={Link} to="/admin/zones">
+                  Study Zones
+                </Menu.Item>
                 <Menu.Item leftSection={<IconSettings size={16} />} component={Link} to="/admin/logs">
                   System Logs
                 </Menu.Item>

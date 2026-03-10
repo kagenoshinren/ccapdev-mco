@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { prisma } from "../db.ts";
 import { requireSession } from "./auth.ts";
-import { categorizeAction } from "./utils.ts";
+import { categorizeAction, sanitize } from "./utils.ts";
 
 export const getUserProfile = createServerFn({ method: "GET" }).handler(async () => {
   const session = await requireSession();
@@ -53,7 +53,7 @@ export const uploadProfilePhoto = createServerFn({ method: "POST" })
       throw new Error("Invalid image data");
     }
     if (d.image.length > MAX_IMAGE_BYTES) {
-      throw new Error("Image must be under 1.5 MB");
+      throw new Error("Image must be under 2 MB");
     }
     return d;
   })
@@ -72,7 +72,10 @@ export const uploadProfilePhoto = createServerFn({ method: "POST" })
   });
 
 export const updateProfile = createServerFn({ method: "POST" })
-  .inputValidator((d: { name: string; bio: string }) => d)
+  .inputValidator((d: { name: string; bio: string }) => {
+    if (!d.name.trim()) throw new Error("Name is required");
+    return { name: sanitize(d.name), bio: sanitize(d.bio) };
+  })
   .handler(async ({ data }) => {
     const session = await requireSession();
     const updated = await prisma.user.update({

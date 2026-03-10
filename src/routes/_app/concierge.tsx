@@ -61,7 +61,7 @@ function ConciergeDashboardPage() {
   const [bookingCreated, setBookingCreated] = useState(false);
 
   return (
-    <Container size="lg" py="xl">
+    <Container size="lg" py="xl" className="pageEnter">
       <Group gap="md" mb="xs">
         <Avatar src={defaultConcierge} alt="Concierge" size={48} radius="xl" />
         <SectionHeader

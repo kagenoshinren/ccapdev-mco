@@ -47,7 +47,7 @@ function UserProfilePage() {
   const [photoUploading, setPhotoUploading] = useState(false);
 
   return (
-    <Container size="md" py="xl">
+    <Container size="md" py="xl" className="pageEnter">
       <SectionHeader title="My Profile" description="Manage your account, reservations, and activity." />
 
       <Paper shadow="md" p="lg" radius="md" className="content-card" mb="xl">

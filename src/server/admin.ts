@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { prisma } from "../db.ts";
 import { requireRole } from "./auth.ts";
-import { categorizeAction } from "./utils.ts";
+import { categorizeAction, clampPagination } from "./utils.ts";
 
 export const getAdminStats = createServerFn({ method: "GET" }).handler(async () => {
   await requireRole(["admin"]);
@@ -58,8 +58,7 @@ export const getActivityLogs = createServerFn({ method: "GET" })
   .inputValidator((d: { page?: number; pageSize?: number }) => d)
   .handler(async ({ data }) => {
     await requireRole(["admin"]);
-    const page = data.page ?? 1;
-    const pageSize = data.pageSize ?? 50;
+    const { page, pageSize } = clampPagination(data.page, data.pageSize);
     const [logs, total] = await Promise.all([
       prisma.activityLog.findMany({
         include: { user: { select: { name: true } } },
@@ -113,8 +112,7 @@ export const getErrorLogs = createServerFn({ method: "GET" })
   .inputValidator((d: { page?: number; pageSize?: number }) => d)
   .handler(async ({ data }) => {
     await requireRole(["admin"]);
-    const page = data.page ?? 1;
-    const pageSize = data.pageSize ?? 50;
+    const { page, pageSize } = clampPagination(data.page, data.pageSize);
     const [logs, total] = await Promise.all([
       prisma.errorLog.findMany({ orderBy: { createdAt: "desc" }, skip: (page - 1) * pageSize, take: pageSize }),
       prisma.errorLog.count(),

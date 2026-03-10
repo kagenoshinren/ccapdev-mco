@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { prisma } from "../db.ts";
 import { requireRole } from "./auth.ts";
+import { sanitize } from "./utils.ts";
 
 export const getReports = createServerFn({ method: "GET" }).handler(async () => {
   await requireRole(["concierge", "admin"]);
@@ -68,7 +69,7 @@ export const createBan = createServerFn({ method: "POST" })
     if (!d.reason.trim()) {
       throw new Error("Ban reason is required");
     }
-    return d;
+    return { ...d, reason: sanitize(d.reason) };
   })
   .handler(async ({ data }) => {
     const session = await requireRole(["concierge", "admin"]);
@@ -96,7 +97,10 @@ export const createReport = createServerFn({ method: "POST" })
     if (d.threadId == null && d.commentId == null) {
       throw new Error("Either threadId or commentId is required");
     }
-    return d;
+    if (!d.reason.trim()) {
+      throw new Error("Report reason is required");
+    }
+    return { ...d, reason: sanitize(d.reason) };
   })
   .handler(async ({ data }) => {
     const session = await requireRole(["resident", "concierge", "admin"]);

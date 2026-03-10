@@ -2,16 +2,14 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { prisma } from "../db.ts";
 import { getSessionFn, requireRole, requireSession } from "./auth.ts";
-import { formatRelative, logError } from "./utils.ts";
+import { clampPagination, formatRelative, logError, sanitize } from "./utils.ts";
 
-const DEFAULT_PAGE_SIZE = 20;
 const MAX_IMAGE_BYTES = 2_000_000;
 
 export const getEstablishments = createServerFn({ method: "GET" })
   .inputValidator((d: { page?: number; pageSize?: number }) => d)
   .handler(async ({ data }) => {
-    const page = data.page ?? 1;
-    const pageSize = data.pageSize ?? DEFAULT_PAGE_SIZE;
+    const { page, pageSize } = clampPagination(data.page, data.pageSize);
     const [rows, total] = await Promise.all([
       prisma.establishment.findMany({
         include: { reviews: { select: { rating: true } }, owner: { select: { name: true } } },
@@ -92,7 +90,15 @@ export const getEstablishment = createServerFn({ method: "GET" })
   });
 
 export const createEstablishment = createServerFn({ method: "POST" })
-  .inputValidator((d: { name: string; category: string; description?: string; address?: string; ownerId: string }) => d)
+  .inputValidator(
+    (d: { name: string; category: string; description?: string; address?: string; image?: string; ownerId: string }) => {
+      if (d.image != null) {
+        if (!d.image.startsWith("data:image/")) throw new Error("Invalid image data");
+        if (d.image.length > MAX_IMAGE_BYTES) throw new Error("Image must be under 2 MB");
+      }
+      return d;
+    },
+  )
   .handler(async ({ data }) => {
     const session = await requireRole(["admin"]);
 
@@ -103,6 +109,7 @@ export const createEstablishment = createServerFn({ method: "POST" })
         category: data.category,
         description: data.description,
         address: data.address,
+        image: data.image ?? null,
         ownerId: data.ownerId,
       },
     });
@@ -133,14 +140,14 @@ export const createReview = createServerFn({ method: "POST" })
           throw new Error("Invalid image data");
         }
         if (img.length > MAX_IMAGE_BYTES) {
-          throw new Error("Each image must be under 1.5 MB");
+          throw new Error("Each image must be under 2 MB");
         }
       }
       if (d.images.length > 5) {
         throw new Error("Maximum 5 images per review");
       }
     }
-    return d;
+    return { ...d, content: sanitize(d.content) };
   })
   .handler(async ({ data }) => {
     const session = await requireSession();
@@ -172,7 +179,7 @@ export const createOwnerReply = createServerFn({ method: "POST" })
     if (!d.reply.trim()) {
       throw new Error("Reply cannot be empty");
     }
-    return d;
+    return { ...d, reply: sanitize(d.reply) };
   })
   .handler(async ({ data }) => {
     const session = await requireSession();
@@ -230,13 +237,23 @@ export const updateEstablishment = createServerFn({ method: "POST" })
       category?: string;
       description?: string;
       address?: string;
+      image?: string | null;
       ownerId?: string;
-    }) => d,
+    }) => {
+      if (d.image != null && d.image !== "") {
+        if (!d.image.startsWith("data:image/")) throw new Error("Invalid image data");
+        if (d.image.length > MAX_IMAGE_BYTES) throw new Error("Image must be under 2 MB");
+      }
+      return d;
+    },
   )
   .handler(async ({ data }) => {
     const session = await requireRole(["admin"]);
-    const { establishmentId, ...updates } = data;
-    const updated = await prisma.establishment.update({ where: { id: establishmentId }, data: updates });
+    const { establishmentId, image, ...updates } = data;
+    const updateData: Record<string, unknown> = { ...updates };
+    if (image === "") updateData.image = null;
+    else if (image != null) updateData.image = image;
+    const updated = await prisma.establishment.update({ where: { id: establishmentId }, data: updateData });
 
     await prisma.activityLog.create({
       data: {

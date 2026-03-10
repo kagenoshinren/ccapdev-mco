@@ -26,6 +26,7 @@ import catServices from "../../../assets/establishments/cat-services.svg";
 import emptyState from "../../../assets/features/empty-state.svg";
 import { BackButton } from "../../../components/back-button.tsx";
 import { EmptyState } from "../../../components/empty-state.tsx";
+import { DetailSkeleton } from "../../../components/page-skeleton.tsx";
 import { getEstablishment, createReview, createOwnerReply, toggleHelpful } from "../../../server/establishments.ts";
 
 import imgStyles from "../../../components/shared-images.module.css";
@@ -41,6 +42,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 export const Route = createFileRoute("/_app/guide/$estId")({
   loader: ({ params }) => getEstablishment({ data: { estId: params.estId } }),
   head: () => ({ meta: [{ title: "Establishment | Adormable" }] }),
+  pendingComponent: DetailSkeleton,
   errorComponent: () => (
     <Container size="md" py="xl">
       <BackButton to="/guide" label="Back to Directory" color="teal" />
@@ -67,7 +69,7 @@ function EstablishmentDetailsPage() {
   };
 
   return (
-    <Container size="md" py="xl">
+    <Container size="md" py="xl" className="pageEnter">
       <BackButton to="/guide" label="Back to Directory" color="teal" />
 
       <Paper shadow="md" p="lg" radius="md" className="content-card" mb="lg">

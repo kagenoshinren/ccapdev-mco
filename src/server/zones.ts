@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 import { prisma } from "../db.ts";
+import { requireRole } from "./auth.ts";
 
 export const getZones = createServerFn({ method: "GET" }).handler(async () => {
   const zones = await prisma.studyZone.findMany({
@@ -37,4 +38,128 @@ export const getZone = createServerFn({ method: "GET" })
       capacity: zone.capacity,
       seats: zone.seats.map((s) => ({ id: s.id, label: s.label, taken: s.isTaken })),
     };
+  });
+
+export const getZonesForAdmin = createServerFn({ method: "GET" }).handler(async () => {
+  await requireRole(["admin"]);
+  const zones = await prisma.studyZone.findMany({
+    include: { _count: { select: { seats: true, reservations: true } }, seats: true },
+    orderBy: { name: "asc" },
+  });
+  return zones.map((z) => ({
+    id: z.id,
+    name: z.name,
+    capacity: z.capacity,
+    seatCount: z._count.seats,
+    reservations: z._count.reservations,
+    hasImage: z.image != null,
+  }));
+});
+
+const MAX_IMAGE_BYTES = 2_000_000;
+
+export const createZone = createServerFn({ method: "POST" })
+  .inputValidator((d: { name: string; capacity: number; image?: string; seatLabels?: string[] }) => {
+    if (!d.name.trim()) throw new Error("Zone name is required");
+    if (d.capacity < 1 || d.capacity > 500) throw new Error("Capacity must be 1–500");
+    if (d.image != null) {
+      if (!d.image.startsWith("data:image/")) throw new Error("Invalid image data");
+      if (d.image.length > MAX_IMAGE_BYTES) throw new Error("Image must be under 2 MB");
+    }
+    return d;
+  })
+  .handler(async ({ data }) => {
+    const session = await requireRole(["admin"]);
+    const zoneId = crypto.randomUUID();
+
+    const zone = await prisma.studyZone.create({
+      data: { id: zoneId, name: data.name.trim(), capacity: data.capacity, image: data.image ?? null },
+    });
+
+    if (data.seatLabels && data.seatLabels.length > 0) {
+      await prisma.seat.createMany({
+        data: data.seatLabels.map((label) => ({ id: crypto.randomUUID(), zoneId, label: label.trim() })),
+      });
+    }
+
+    await prisma.activityLog.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: session.user.id,
+        action: "create_zone",
+        detail: `Created study zone "${data.name}"`,
+      },
+    });
+
+    return zone;
+  });
+
+export const updateZone = createServerFn({ method: "POST" })
+  .inputValidator(
+    (d: { zoneId: string; name?: string; capacity?: number; image?: string | null; seatLabels?: string[] }) => {
+      if (d.name != null && !d.name.trim()) throw new Error("Zone name cannot be empty");
+      if (d.capacity != null && (d.capacity < 1 || d.capacity > 500)) throw new Error("Capacity must be 1–500");
+      if (d.image != null && d.image !== "") {
+        if (!d.image.startsWith("data:image/")) throw new Error("Invalid image data");
+        if (d.image.length > MAX_IMAGE_BYTES) throw new Error("Image must be under 2 MB");
+      }
+      return d;
+    },
+  )
+  .handler(async ({ data }) => {
+    const session = await requireRole(["admin"]);
+    const { zoneId, seatLabels, ...updates } = data;
+
+    // Handle image: empty string means remove
+    const updateData: Record<string, unknown> = {};
+    if (updates.name != null) updateData.name = updates.name.trim();
+    if (updates.capacity != null) updateData.capacity = updates.capacity;
+    if (updates.image === "") updateData.image = null;
+    else if (updates.image != null) updateData.image = updates.image;
+
+    const zone = await prisma.studyZone.update({ where: { id: zoneId }, data: updateData });
+
+    // Replace seats if new labels provided
+    if (seatLabels != null) {
+      await prisma.seat.deleteMany({ where: { zoneId, isTaken: false } });
+      const existingLabels = new Set(
+        (await prisma.seat.findMany({ where: { zoneId }, select: { label: true } })).map((s) => s.label),
+      );
+      const newLabels = seatLabels.filter((l) => !existingLabels.has(l.trim()));
+      if (newLabels.length > 0) {
+        await prisma.seat.createMany({
+          data: newLabels.map((label) => ({ id: crypto.randomUUID(), zoneId, label: label.trim() })),
+        });
+      }
+    }
+
+    await prisma.activityLog.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: session.user.id,
+        action: "update_zone",
+        detail: `Updated study zone "${zone.name}"`,
+      },
+    });
+
+    return zone;
+  });
+
+export const deleteZone = createServerFn({ method: "POST" })
+  .inputValidator((d: { zoneId: string }) => d)
+  .handler(async ({ data }) => {
+    const session = await requireRole(["admin"]);
+    const zone = await prisma.studyZone.findUnique({ where: { id: data.zoneId } });
+    if (!zone) throw new Error("Zone not found");
+
+    await prisma.studyZone.delete({ where: { id: data.zoneId } });
+
+    await prisma.activityLog.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: session.user.id,
+        action: "delete_zone",
+        detail: `Deleted study zone "${zone.name}"`,
+      },
+    });
   });

@@ -1,0 +1,45 @@
+.carousel {
+  overflow: hidden;
+}
+
+.carouselContainer {
+  display: flex;
+  gap: var(--mantine-spacing-md);
+}
+
+.carouselSlide {
+  flex: 0 0 280px;
+  min-width: 0;
+
+  @mixin smaller-than $mantine-breakpoint-sm {
+    flex: 0 0 240px;
+  }
+}
+
+.carouselControls {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+}
+
+.carouselDots {
+  display: flex;
+  gap: 6px;
+}
+
+.carouselDot {
+  background-color: var(--mantine-color-gray-3);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  height: 8px;
+  padding: 0;
+  transition: background-color 0.2s ease;
+  width: 8px;
+}
+
+.carouselDotActive {
+  background-color: var(--mantine-color-pink-filled);
+  width: 20px;
+  border-radius: 4px;
+}

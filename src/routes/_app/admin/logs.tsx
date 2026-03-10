@@ -53,7 +53,7 @@ function SystemLogsPage() {
   });
 
   return (
-    <Container size="lg" py="xl">
+    <Container size="lg" py="xl" className="pageEnter">
       <SectionHeader title="System Logs" description="Audit trails and technical error monitoring." />
 
       <Tabs defaultValue="activity">

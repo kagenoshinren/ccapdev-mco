@@ -19,11 +19,24 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import ctaPattern from "../../assets/backgrounds/cta-pattern.svg";
 import heroBg from "../../assets/backgrounds/hero-bg.svg";
 import statsTexture from "../../assets/backgrounds/stats-texture.svg";
+import cafeManila from "../../assets/establishments/1-cafe-manila.svg";
+import kuyasCarinderia from "../../assets/establishments/2-kuyas-carinderia.svg";
+import quickPrints from "../../assets/establishments/3-quick-prints.svg";
+import samgyupCorner from "../../assets/establishments/4-samgyup-corner.svg";
+import laundryExpress from "../../assets/establishments/5-laundry-express.svg";
+import sevenEleven from "../../assets/establishments/6-7-eleven-taft.svg";
 import aboutIllustration from "../../assets/features/about-illustration.svg";
 import step1Browse from "../../assets/features/step-1-browse.svg";
 import step2Reserve from "../../assets/features/step-2-reserve.svg";
 import step3Rate from "../../assets/features/step-3-rate.svg";
 import studyNookHero from "../../assets/heroes/study-nook-hero.svg";
+import computerLab from "../../assets/study-nook/computer-lab.svg";
+import groupStudy from "../../assets/study-nook/group-study.svg";
+import mainHall from "../../assets/study-nook/main-hall.svg";
+import quietRoomA from "../../assets/study-nook/quiet-room-a.svg";
+import quietRoomB from "../../assets/study-nook/quiet-room-b.svg";
+import readingRoom from "../../assets/study-nook/reading-room.svg";
+import { CardCarousel, CarouselSlide } from "../../components/card-carousel.tsx";
 import { LinkButton } from "../../components/link-button.tsx";
 import { FEATURES } from "../../data/features.ts";
 import { STATS } from "../../data/stats.ts";
@@ -38,6 +51,24 @@ export const Route = createFileRoute("/_app/")({
 });
 
 const STEP_IMAGES = [step1Browse, step2Reserve, step3Rate];
+
+const ZONE_SLIDES = [
+  { name: "Main Hall", image: mainHall, desc: "Open study area with plenty of space" },
+  { name: "Quiet Room A", image: quietRoomA, desc: "Silent zone for focused study" },
+  { name: "Quiet Room B", image: quietRoomB, desc: "Additional quiet workspace" },
+  { name: "Group Study Room", image: groupStudy, desc: "Collaborative study space" },
+  { name: "Computer Lab", image: computerLab, desc: "Workstations with PC access" },
+  { name: "Reading Room", image: readingRoom, desc: "Cozy reading environment" },
+];
+
+const ESTABLISHMENT_SLIDES = [
+  { name: "Café Manila", image: cafeManila, desc: "Specialty coffee & pastries" },
+  { name: "Kuya's Carinderia", image: kuyasCarinderia, desc: "Home-style Filipino meals" },
+  { name: "Quick Prints", image: quickPrints, desc: "Printing & document services" },
+  { name: "Samgyup Corner", image: samgyupCorner, desc: "Korean BBQ near campus" },
+  { name: "Laundry Express", image: laundryExpress, desc: "Self-service laundromat" },
+  { name: "7-Eleven Taft", image: sevenEleven, desc: "24/7 convenience store" },
+];
 
 function LandingPage() {
   return (
@@ -272,6 +303,76 @@ function LandingPage() {
                 </Card>
               ))}
             </SimpleGrid>
+          </Container>
+        </FadeInSection>
+      </Box>
+
+      <Container size="lg" py={80}>
+        <FadeInSection>
+          <Group justify="space-between" align="flex-end" mb="xl">
+            <div>
+              <Badge color="pink" variant="light" size="lg" radius="xl" mb="xs">
+                Study Spaces
+              </Badge>
+              <Title className={styles.sectionTitle}>Explore The Study Nook</Title>
+              <Text c="dimmed" mt="xs">
+                Browse available zones and find your ideal study spot.
+              </Text>
+            </div>
+            <LinkButton variant="light" color="pink" radius="xl" to="/study-nook" rightSection={<IconArrowRight size={16} />}>
+              View All
+            </LinkButton>
+          </Group>
+          <CardCarousel>
+            {ZONE_SLIDES.map((zone) => (
+              <CarouselSlide key={zone.name}>
+                <Card shadow="sm" radius="md" className="content-card" padding="md">
+                  <img src={zone.image} alt={zone.name} className={imgStyles.cardImage} />
+                  <Text fw={600} mt="xs">
+                    {zone.name}
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    {zone.desc}
+                  </Text>
+                </Card>
+              </CarouselSlide>
+            ))}
+          </CardCarousel>
+        </FadeInSection>
+      </Container>
+
+      <Box py={80} style={{ backgroundColor: "#f8f9fa" }}>
+        <FadeInSection>
+          <Container size="lg">
+            <Group justify="space-between" align="flex-end" mb="xl">
+              <div>
+                <Badge color="teal" variant="light" size="lg" radius="xl" mb="xs">
+                  Nearby Spots
+                </Badge>
+                <Title className={styles.sectionTitle}>Local Establishments</Title>
+                <Text c="dimmed" mt="xs">
+                  Discover restaurants, services, and shops near your dorm.
+                </Text>
+              </div>
+              <LinkButton variant="light" color="teal" radius="xl" to="/guide" rightSection={<IconArrowRight size={16} />}>
+                View All
+              </LinkButton>
+            </Group>
+            <CardCarousel>
+              {ESTABLISHMENT_SLIDES.map((est) => (
+                <CarouselSlide key={est.name}>
+                  <Card shadow="sm" radius="md" className="content-card" padding="md">
+                    <img src={est.image} alt={est.name} className={imgStyles.cardImage} />
+                    <Text fw={600} mt="xs">
+                      {est.name}
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      {est.desc}
+                    </Text>
+                  </Card>
+                </CarouselSlide>
+              ))}
+            </CardCarousel>
           </Container>
         </FadeInSection>
       </Box>

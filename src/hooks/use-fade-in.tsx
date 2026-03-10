@@ -1,7 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
-import styles from "../routes/_app/index.module.css";
-
 export function FadeInSection({
   children,
   className = "",
@@ -39,7 +37,7 @@ export function FadeInSection({
   return (
     <div
       ref={setRef}
-      className={`${styles.fadeSection} ${isVisible ? styles.fadeSectionVisible : ""} ${className}`}
+      className={`fadeSection ${isVisible ? "fadeSectionVisible" : ""} ${className}`}
       {...props}
     >
       {children}

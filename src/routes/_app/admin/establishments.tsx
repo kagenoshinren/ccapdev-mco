@@ -12,9 +12,10 @@ import {
   Badge,
   ActionIcon,
   Modal,
+  FileInput,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconEdit, IconTrash, IconPlus, IconSearch } from "@tabler/icons-react";
+import { IconEdit, IconTrash, IconPlus, IconSearch, IconUpload } from "@tabler/icons-react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 
@@ -32,6 +33,7 @@ import imgStyles from "../../../components/shared-images.module.css";
 import styles from "./index.module.css";
 
 const FEEDBACK_TIMEOUT_MS = 2000;
+const MAX_IMAGE_BYTES = 2_000_000;
 
 export const Route = createFileRoute("/_app/admin/establishments")({
   loader: async () => {
@@ -53,6 +55,7 @@ function EstablishmentManagerPage() {
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
   const [ownerId, setOwnerId] = useState<string | null>(null);
+  const [imageData, setImageData] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState("");
 
   const [deleteOpened, { open: openDelete, close: closeDelete }] = useDisclosure(false);
@@ -70,6 +73,22 @@ function EstablishmentManagerPage() {
     setDescription("");
     setAddress("");
     setOwnerId(null);
+    setImageData(null);
+  };
+
+  const handleImageChange = (file: File | null) => {
+    if (!file) {
+      setImageData(null);
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setSuccessMsg("Image must be under 2 MB");
+      setTimeout(() => setSuccessMsg(""), FEEDBACK_TIMEOUT_MS);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setImageData(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const handleDelete = async () => {
@@ -82,7 +101,7 @@ function EstablishmentManagerPage() {
   };
 
   return (
-    <Container size="lg" py="xl">
+    <Container size="lg" py="xl" className="pageEnter">
       <Group justify="space-between" mb="xs">
         <SectionHeader
           title="Establishment Manager"
@@ -262,6 +281,13 @@ function EstablishmentManagerPage() {
               onChange={setOwnerId}
             />
           </Group>
+          <FileInput
+            label="Establishment Image"
+            placeholder="Upload image (max 2 MB)"
+            leftSection={<IconUpload size={16} />}
+            accept="image/*"
+            onChange={handleImageChange}
+          />
           <Group justify="flex-end">
             <Button variant="light" color="gray" onClick={resetForm}>
               Cancel
@@ -274,7 +300,7 @@ function EstablishmentManagerPage() {
                   if (!name || category == null || ownerId == null) {
                     return;
                   }
-                  await createEstablishment({ data: { name, category, description, address, ownerId } });
+                  await createEstablishment({ data: { name, category, description, address, image: imageData ?? undefined, ownerId } });
                 } else {
                   await updateEstablishment({
                     data: {
@@ -283,6 +309,7 @@ function EstablishmentManagerPage() {
                       category: category ?? undefined,
                       description: description || undefined,
                       address: address || undefined,
+                      image: imageData ?? undefined,
                       ownerId: ownerId ?? undefined,
                     },
                   });

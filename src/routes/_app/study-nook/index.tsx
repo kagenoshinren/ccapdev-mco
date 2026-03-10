@@ -10,8 +10,10 @@ import quietRoomA from "../../../assets/study-nook/quiet-room-a.svg";
 import quietRoomB from "../../../assets/study-nook/quiet-room-b.svg";
 import readingRoom from "../../../assets/study-nook/reading-room.svg";
 import { EmptyState } from "../../../components/empty-state.tsx";
+import { PageSkeleton } from "../../../components/page-skeleton.tsx";
 import { SearchBar } from "../../../components/search-bar.tsx";
 import { SectionHeader } from "../../../components/section-header.tsx";
+import { FadeInSection } from "../../../hooks/use-fade-in.tsx";
 import { getZones } from "../../../server/zones.ts";
 
 import imgStyles from "../../../components/shared-images.module.css";
@@ -42,6 +44,7 @@ function getOccupancyColor(pct: number): string {
 export const Route = createFileRoute("/_app/study-nook/")({
   loader: () => getZones(),
   head: () => ({ meta: [{ title: "Study Nook | Adormable" }] }),
+  pendingComponent: PageSkeleton,
   component: ZoneSelectionPage,
 });
 
@@ -52,15 +55,16 @@ function ZoneSelectionPage() {
   const filtered = zones.filter((z) => z.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <Container size="lg" py="xl">
+    <Container size="lg" py="xl" className="pageEnter">
       <SectionHeader title="The Study Nook" description="Choose a zone to reserve your study spot." color="pink" />
 
       <SearchBar searchValue={search} onSearchChange={setSearch} searchPlaceholder="Search zones..." />
 
       {filtered.length === 0 && <EmptyState image={emptyState} message="No zones match your search." />}
 
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
-        {filtered.map((zone) => {
+      <FadeInSection>
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
+          {filtered.map((zone) => {
           const pct = ((zone.capacity - zone.available) / zone.capacity) * TO_PERCENT;
           return (
             <Card key={zone.id} shadow="md" padding="lg" radius="md" className="content-card">
@@ -92,7 +96,8 @@ function ZoneSelectionPage() {
             </Card>
           );
         })}
-      </SimpleGrid>
+        </SimpleGrid>
+      </FadeInSection>
     </Container>
   );
 }

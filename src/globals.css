@@ -76,3 +76,57 @@ a {
 .content-card {
   border: 1px solid light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
 }
+
+/* ── Fade-in on scroll (used by FadeInSection) ── */
+.fadeSection {
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fadeSectionVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Page entrance animation ── */
+.pageEnter {
+  animation: pageSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pageSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Loading skeleton pulse ── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5)) 25%,
+    light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4)) 50%,
+    light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5)) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--mantine-radius-sm);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}

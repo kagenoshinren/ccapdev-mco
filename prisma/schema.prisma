@@ -139,6 +139,7 @@ model Establishment {
   category    String
   description String?
   address     String?
+  image       String?
   ownerId     String
   owner       User     @relation("EstablishmentOwner", fields: [ownerId], references: [id])
   status      String   @default("active") // active | pending | closed

@@ -52,7 +52,7 @@ function ForumModerationPage() {
   };
 
   return (
-    <Container size="lg" py="xl">
+    <Container size="lg" py="xl" className="pageEnter">
       <SectionHeader title="Forum Moderation" description="Review flagged content and manage user behavior." />
 
       <Modal opened={reviewOpened} onClose={closeReview} title="Review Flagged Content" centered size="lg">

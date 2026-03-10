@@ -21,6 +21,7 @@ import catKoreanBbq from "../../../assets/establishments/cat-korean-bbq.svg";
 import catServices from "../../../assets/establishments/cat-services.svg";
 import emptyState from "../../../assets/features/empty-state.svg";
 import { EmptyState } from "../../../components/empty-state.tsx";
+import { PageSkeleton } from "../../../components/page-skeleton.tsx";
 import { SearchBar } from "../../../components/search-bar.tsx";
 import { SectionHeader } from "../../../components/section-header.tsx";
 import { getEstablishments } from "../../../server/establishments.ts";
@@ -49,6 +50,7 @@ const ALL_CATEGORIES = ["All", "Coffee Shop", "Filipino Food", "Services", "Kore
 export const Route = createFileRoute("/_app/guide/")({
   loader: () => getEstablishments({ data: {} }),
   head: () => ({ meta: [{ title: "Survival Guide | Adormable" }] }),
+  pendingComponent: PageSkeleton,
   component: DirectoryListPage,
 });
 
@@ -65,7 +67,7 @@ function DirectoryListPage() {
   });
 
   return (
-    <Container size="lg" py="xl">
+    <Container size="lg" py="xl" className="pageEnter">
       <SectionHeader
         title="The Survival Guide"
         description="Discover and review local establishments near your dormitory."

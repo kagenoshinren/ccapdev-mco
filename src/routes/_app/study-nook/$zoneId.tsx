@@ -19,6 +19,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { BackButton } from "../../../components/back-button.tsx";
+import { DetailSkeleton } from "../../../components/page-skeleton.tsx";
 import { TIME_SLOTS, WEEK_DAYS } from "../../../features/study-nook/study-nook.constants.ts";
 import { createReservation } from "../../../server/reservations.ts";
 import { getZone } from "../../../server/zones.ts";
@@ -28,6 +29,7 @@ import styles from "./$zoneId.module.css";
 export const Route = createFileRoute("/_app/study-nook/$zoneId")({
   loader: ({ params }) => getZone({ data: { zoneId: params.zoneId } }),
   head: () => ({ meta: [{ title: "Reserve a Seat | Adormable" }] }),
+  pendingComponent: DetailSkeleton,
   component: ReservationPage,
 });
 
@@ -59,7 +61,7 @@ function ReservationPage() {
   }
 
   return (
-    <Container size="lg" py="xl">
+    <Container size="lg" py="xl" className="pageEnter">
       <BackButton to="/study-nook" label="Back to Zones" />
 
       <Title className="page-title" mb="xs">
@@ -171,15 +173,15 @@ function ReservationPage() {
               />
               {selectedSeat != null && (
                 <Paper bg="pink.0" p="sm" radius="md">
-                  <Text size="sm">
-                    Selected seat: <Badge>{zone.seats.find((s) => s.id === selectedSeat)?.label ?? selectedSeat}</Badge>
+                  <Group gap="xs" align="center">
+                    <Text size="sm" component="span">Selected seat:</Text>
+                    <Badge>{zone.seats.find((s) => s.id === selectedSeat)?.label ?? selectedSeat}</Badge>
                     {selectedStartTime != null && selectedEndTime != null && (
-                      <>
-                        {" "}
+                      <Text size="sm" component="span">
                         · {WEEK_DAYS[selectedDay]} · {selectedStartTime} – {selectedEndTime}
-                      </>
+                      </Text>
                     )}
-                  </Text>
+                  </Group>
                 </Paper>
               )}
               {confirmed && (

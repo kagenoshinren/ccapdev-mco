@@ -2,16 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { prisma } from "../db.ts";
 import { getSessionFn, requireSession } from "./auth.ts";
-import { formatRelative } from "./utils.ts";
-
-const DEFAULT_PAGE_SIZE = 20;
+import { clampPagination, formatRelative, sanitize } from "./utils.ts";
 
 export const getThreads = createServerFn({ method: "GET" })
   .inputValidator((d: { page?: number; pageSize?: number }) => d)
   .handler(async ({ data }) => {
     const session = await getSessionFn();
-    const page = data.page ?? 1;
-    const pageSize = data.pageSize ?? DEFAULT_PAGE_SIZE;
+    const { page, pageSize } = clampPagination(data.page, data.pageSize);
     const [rows, total] = await Promise.all([
       prisma.thread.findMany({
         include: { author: true, _count: { select: { comments: true } } },
@@ -117,7 +114,11 @@ export const getThread = createServerFn({ method: "GET" })
   });
 
 export const createThread = createServerFn({ method: "POST" })
-  .inputValidator((d: { title: string; content: string; tag?: string }) => d)
+  .inputValidator((d: { title: string; content: string; tag?: string }) => {
+    if (!d.title.trim()) throw new Error("Title is required");
+    if (!d.content.trim()) throw new Error("Content is required");
+    return { title: sanitize(d.title), content: sanitize(d.content), tag: d.tag ? sanitize(d.tag) : undefined };
+  })
   .handler(async ({ data }) => {
     const session = await requireSession();
     const thread = await prisma.thread.create({
@@ -143,7 +144,10 @@ export const createThread = createServerFn({ method: "POST" })
   });
 
 export const createComment = createServerFn({ method: "POST" })
-  .inputValidator((d: { threadId: string; content: string; parentId?: string }) => d)
+  .inputValidator((d: { threadId: string; content: string; parentId?: string }) => {
+    if (!d.content.trim()) throw new Error("Comment content is required");
+    return { ...d, content: sanitize(d.content) };
+  })
   .handler(async ({ data }) => {
     const session = await requireSession();
     const comment = await prisma.comment.create({
@@ -258,7 +262,11 @@ export const deleteThread = createServerFn({ method: "POST" })
   });
 
 export const updateThread = createServerFn({ method: "POST" })
-  .inputValidator((d: { threadId: string; title: string; content: string; tag?: string }) => d)
+  .inputValidator((d: { threadId: string; title: string; content: string; tag?: string }) => {
+    if (!d.title.trim()) throw new Error("Title is required");
+    if (!d.content.trim()) throw new Error("Content is required");
+    return { ...d, title: sanitize(d.title), content: sanitize(d.content), tag: d.tag ? sanitize(d.tag) : undefined };
+  })
   .handler(async ({ data }) => {
     const session = await requireSession();
     const thread = await prisma.thread.findUnique({ where: { id: data.threadId } });

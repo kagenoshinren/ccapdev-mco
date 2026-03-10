@@ -26,6 +26,7 @@ import { useState } from "react";
 
 import emptyState from "../../../assets/features/empty-state.svg";
 import { EmptyState } from "../../../components/empty-state.tsx";
+import { PageSkeleton } from "../../../components/page-skeleton.tsx";
 import { SearchBar } from "../../../components/search-bar.tsx";
 import { SectionHeader } from "../../../components/section-header.tsx";
 import { TAG_COLORS, DEFAULT_TAGS } from "../../../features/lobby/lobby.constants.ts";
@@ -36,6 +37,7 @@ const MAX_CONTENT_LENGTH = 2000;
 export const Route = createFileRoute("/_app/lobby/")({
   loader: () => getThreads({ data: {} }),
   head: () => ({ meta: [{ title: "Lobby | Adormable" }] }),
+  pendingComponent: PageSkeleton,
   component: ForumFeedPage,
 });
 
@@ -80,7 +82,7 @@ function ForumFeedPage() {
   };
 
   return (
-    <Container size="md" py="xl">
+    <Container size="md" py="xl" className="pageEnter">
       {/* Create Post Modal */}
       <Modal opened={createOpened} onClose={closeCreate} title="Create New Post" centered size="lg">
         <Tabs value={previewTab} onChange={setPreviewTab}>

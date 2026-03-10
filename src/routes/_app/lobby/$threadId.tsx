@@ -22,6 +22,7 @@ import { useState } from "react";
 import emptyState from "../../../assets/features/empty-state.svg";
 import { BackButton } from "../../../components/back-button.tsx";
 import { EmptyState } from "../../../components/empty-state.tsx";
+import { DetailSkeleton } from "../../../components/page-skeleton.tsx";
 import { useAuth } from "../../../contexts/auth-context.tsx";
 import { TAG_COLORS } from "../../../features/lobby/lobby.constants.ts";
 import { createReport } from "../../../server/moderation.ts";
@@ -38,6 +39,7 @@ import {
 export const Route = createFileRoute("/_app/lobby/$threadId")({
   loader: ({ params }) => getThread({ data: { threadId: params.threadId } }),
   head: () => ({ meta: [{ title: "Thread | Adormable" }] }),
+  pendingComponent: DetailSkeleton,
   errorComponent: () => <EmptyState image={emptyState} message="Thread not found." />,
   component: ThreadViewPage,
 });
@@ -58,7 +60,7 @@ function ThreadViewPage() {
   const [reportTarget, setReportTarget] = useState<{ threadId?: string; commentId?: string }>({});
 
   return (
-    <Container size="md" py="xl">
+    <Container size="md" py="xl" className="pageEnter">
       {/* Edit Thread Modal */}
       <Modal
         opened={editOpen}
