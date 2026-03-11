@@ -169,7 +169,7 @@ function AdminControlPanelPage() {
                           };
                           const nextRole = ROLE_ORDER[user.role] ?? "resident";
                           await updateUserRole({ data: { userId: user.id, role: nextRole } });
-                          void router.invalidate();
+                          await router.invalidate();
                         },
                       },
                       ...(user.pendingAppeals > 0
@@ -196,7 +196,7 @@ function AdminControlPanelPage() {
                             leftSection: <IconRefresh size={14} />,
                             onClick: async () => {
                               await unbanUser({ data: { userId: user.id } });
-                              void router.invalidate();
+                              await router.invalidate();
                             },
                           }
                         : {
@@ -265,7 +265,7 @@ function AdminControlPanelPage() {
                 }
                 await createBan({ data: { userId: banTarget.id, reason: banReason, durationDays: banDuration } });
                 setBanTarget(null);
-                void router.invalidate();
+                await router.invalidate();
               }}
             >
               Confirm Ban
@@ -310,7 +310,7 @@ function AdminControlPanelPage() {
                   await reviewBanAppeal({ data: { appealId: appealTarget.id, decision: "reject", staffNote } });
                   setAppealTarget(null);
                   setStaffNote("");
-                  void router.invalidate();
+                  await router.invalidate();
                 }}
               >
                 Reject Appeal
@@ -321,7 +321,7 @@ function AdminControlPanelPage() {
                   await reviewBanAppeal({ data: { appealId: appealTarget.id, decision: "approve", staffNote } });
                   setAppealTarget(null);
                   setStaffNote("");
-                  void router.invalidate();
+                  await router.invalidate();
                 }}
               >
                 Approve and Unban

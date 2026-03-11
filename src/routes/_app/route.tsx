@@ -12,8 +12,14 @@ const PUBLIC_PATHS = new Set(["/", "/study-nook", "/lobby", "/guide", "/terms"])
 
 export const Route = createFileRoute("/_app")({
   beforeLoad: async ({ location }) => {
-    // Allow public pages without auth
     const path = location.pathname;
+    const sessionState = await getSessionStateFn();
+
+    if (sessionState.activeBan != null) {
+      throw redirect({ to: "/suspended" });
+    }
+
+    // Allow public pages without auth
     const isPublic =
       PUBLIC_PATHS.has(path) ||
       path.startsWith("/study-nook/") ||
@@ -23,12 +29,8 @@ export const Route = createFileRoute("/_app")({
       return;
     }
 
-    const sessionState = await getSessionStateFn();
     if (!sessionState.session?.user) {
       throw redirect({ to: "/login" });
-    }
-    if (sessionState.activeBan != null) {
-      throw redirect({ to: "/suspended" });
     }
 
     // oxlint-disable-next-line no-unsafe-type-assertion -- Better Auth doesn't type custom user fields
