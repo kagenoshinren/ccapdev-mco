@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
 
-  "ignorePatterns": ["dist/**", "generated/prisma/**", "node_modules/**", "src/route-tree.gen.ts"],
+  "ignorePatterns": ["dist/**", "generated/prisma/**", "node_modules/**", "prisma/seed.ts", "src/route-tree.gen.ts"],
 
   "options": { "typeAware": true },
 
