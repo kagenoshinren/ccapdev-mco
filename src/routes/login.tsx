@@ -14,7 +14,7 @@ import {
   Alert,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { Link, createFileRoute, redirect, useRouter } from "@tanstack/react-router";
+import { Link, createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 
 import loginBg from "../assets/backgrounds/login-bg.svg";
@@ -46,7 +46,6 @@ export const Route = createFileRoute("/login")({
 function LoginRegisterPage() {
   const { register } = Route.useSearch();
   const [isRegister, setIsRegister] = useState(register === true);
-  const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -84,7 +83,7 @@ function LoginRegisterPage() {
       setError(authError.message ?? "Login failed. Please try again.");
       return;
     }
-    window.location.assign("/dashboard");
+    globalThis.location.assign("/dashboard");
   };
 
   const handleRegister = async (values: typeof registerForm.values) => {
@@ -100,7 +99,7 @@ function LoginRegisterPage() {
       setError(authError.message ?? "Registration failed. Please try again.");
       return;
     }
-    window.location.assign("/dashboard");
+    globalThis.location.assign("/dashboard");
   };
 
   return (
