@@ -23,9 +23,9 @@
       {
         "allow": [
           { "from": "package", "package": "@tanstack/router-core", "name": "Redirect" },
-          { "from": "package", "package": "@tanstack/router-core", "name": "NotFoundError" },
-        ],
-      },
+          { "from": "package", "package": "@tanstack/router-core", "name": "NotFoundError" }
+        ]
+      }
     ],
 
     /* Restriction */
@@ -36,8 +36,8 @@
         "allowConciseArrowFunctionExpressionsStartingWithVoid": true,
         "allowDirectConstAssertionInArrowFunctions": true,
         "allowExpressions": true,
-        "allowTypedFunctionExpressions": true,
-      },
+        "allowTypedFunctionExpressions": true
+      }
     ],
     "typescript/no-empty-object-type": ["error", { "allowInterfaces": "with-single-extends" }],
     "unicorn/prefer-node-protocol": "error",
@@ -61,8 +61,8 @@
         "ignoreClassFieldInitialValues": true,
         "ignoreNumericLiteralTypes": true,
         "ignoreReadonlyClassProperties": true,
-        "ignoreTypeIndexes": true,
-      },
+        "ignoreTypeIndexes": true
+      }
     ],
     "eslint/no-ternary": "off",
     "eslint/prefer-const": ["warn", { "destructuring": "all", "ignoreReadBeforeAssign": true }],
@@ -78,7 +78,7 @@
     "typescript/no-empty-interface": ["warn", { "allowSingleExtends": true }],
     "unicorn/no-null": "off",
     "unicorn/prefer-ternary": ["warn", "only-single-line"],
-    "unicorn/switch-case-braces": ["warn", "avoid"],
+    "unicorn/switch-case-braces": ["warn", "avoid"]
   },
 
   "overrides": [
@@ -86,8 +86,8 @@
       "files": ["*.config.[jt]s"],
       "rules": {
         /* Style */
-        "import/no-anonymous-default-export": ["warn", { "allowObject": true }],
-      },
+        "import/no-anonymous-default-export": ["warn", { "allowObject": true }]
+      }
     },
     { "files": ["vite.config.ts"], "env": { "es2023": true } },
 
@@ -95,7 +95,7 @@
       "files": ["**/*.[jt]sx"],
       "jsPlugins": [
         { "name": "tanstack-router", "specifier": "@tanstack/eslint-plugin-router" },
-        { "name": "react-compiler", "specifier": "eslint-plugin-react-hooks" },
+        { "name": "react-compiler", "specifier": "eslint-plugin-react-hooks" }
       ],
       "plugins": ["react", "jsx-a11y"],
       "rules": {
@@ -144,8 +144,8 @@
         "react/react-in-jsx-scope": "off",
 
         /* React event handlers are fire-and-forget by design */
-        "typescript/no-misused-promises": "off",
-      },
+        "typescript/no-misused-promises": "off"
+      }
     },
     {
       "files": ["src/routes/**/*.[jt]sx"],
@@ -162,8 +162,8 @@
         "typescript/no-unsafe-call": "off",
         "typescript/no-unsafe-member-access": "off",
         "typescript/no-unsafe-return": "off",
-        "typescript/strict-boolean-expressions": "off",
-      },
-    },
-  ],
+        "typescript/strict-boolean-expressions": "off"
+      }
+    }
+  ]
 }
