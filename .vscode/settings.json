@@ -5,6 +5,8 @@
 
   "cssVariables.lookupFiles": ["**/*.css", "node_modules/@mantine/core/styles.css"],
 
+  "stylelint.configFile": "stylelint.config.ts",
+
   "oxc.configPath": ".oxlintrc.json",
   "oxc.disableNestedConfig": true,
   "oxc.enable": true,

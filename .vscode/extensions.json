@@ -6,6 +6,7 @@
     "clinyong.vscode-css-modules",
     "vunguyentuan.vscode-css-variables",
     "vunguyentuan.vscode-postcss",
+    "stylelint.vscode-stylelint",
 
     /* JavaScript */
     "oxc.oxc-vscode",
