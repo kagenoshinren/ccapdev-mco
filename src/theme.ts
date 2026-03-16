@@ -15,11 +15,11 @@ export const theme = createTheme({
   radius: { xs: "6px", sm: "8px", md: "12px", lg: "16px", xl: "24px" },
   defaultRadius: "md",
   shadows: {
-    xs: "0 1px 2px rgba(0, 0, 0, 0.04)",
-    sm: "0 2px 8px rgba(0, 0, 0, 0.06)",
-    md: "0 4px 16px rgba(0, 0, 0, 0.06)",
-    lg: "0 8px 32px rgba(0, 0, 0, 0.08)",
-    xl: "0 16px 48px rgba(0, 0, 0, 0.1)",
+    xs: "0 1px 2px rgb(0 0 0 / 4%)",
+    sm: "0 2px 8px rgb(0 0 0 / 6%)",
+    md: "0 4px 16px rgb(0 0 0 / 6%)",
+    lg: "0 8px 32px rgb(0 0 0 / 8%)",
+    xl: "0 16px 48px rgb(0 0 0 / 10%)",
   },
   other: {
     transitionDuration: "0.25s",
