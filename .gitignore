@@ -5,6 +5,7 @@
 
 # Node.js
 dist/
+.output/
 node_modules/
 
 # TanStack Start
