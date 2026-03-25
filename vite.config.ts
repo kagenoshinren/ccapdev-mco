@@ -1,6 +1,7 @@
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
+import { nitro } from "nitro/vite";
 import { defineConfig, type Plugin } from "vite";
 
 import type { auth as AuthHandler } from "./src/lib/auth.ts";
@@ -90,6 +91,7 @@ export default defineConfig({
     betterAuthVitePlugin(),
     devtools(),
     tanstackStart({ router: { generatedRouteTree: "./route-tree.gen.ts" } }),
+    nitro(),
     react({ babel: { plugins: ["babel-plugin-react-compiler"] } }),
   ],
   ssr: { noExternal: ["@mantine/*"] },
