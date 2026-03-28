@@ -31,33 +31,33 @@ interface LoginSearch {
 
 type AuthClientError = { message?: string; status?: number; statusText?: string } | null | undefined;
 
-function formatAuthError(error: unknown, fallbackMessage: string): string {
-  if (typeof error === "string" && error.trim().length > 0) {
-    return error;
+function getAuthErrorMessage(err: unknown, fallbackMessage: string): string {
+  if (typeof err === "string" && err.trim().length > 0) {
+    return err;
   }
 
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
+  if (err instanceof Error && err.message.trim().length > 0) {
+    return err.message;
   }
 
   return fallbackMessage;
 }
 
-function getAuthClientErrorMessage(authError: AuthClientError, fallbackMessage: string): string {
-  if (authError == null) {
+function getAuthClientErrorMessage(authErr: AuthClientError, fallbackMessage: string): string {
+  if (authErr == null) {
     return fallbackMessage;
   }
 
-  if (typeof authError.message === "string" && authError.message.trim().length > 0) {
-    return authError.message;
+  if (typeof authErr.message === "string" && authErr.message.trim().length > 0) {
+    return authErr.message;
   }
 
-  if (typeof authError.statusText === "string" && authError.statusText.trim().length > 0) {
-    return authError.statusText;
+  if (typeof authErr.statusText === "string" && authErr.statusText.trim().length > 0) {
+    return authErr.statusText;
   }
 
-  if (typeof authError.status === "number") {
-    return `Request failed (${authError.status}). Please try again.`;
+  if (typeof authErr.status === "number") {
+    return `Request failed (${authErr.status}). Please try again.`;
   }
 
   return fallbackMessage;
@@ -108,20 +108,20 @@ function LoginRegisterPage() {
     setError("");
     setLoading(true);
     try {
-      const { error: authError } = await authClient.signIn.email({
+      const { error: authErr } = await authClient.signIn.email({
         email: values.email,
         password: values.password,
         rememberMe,
       });
 
-      if (authError) {
-        setError(getAuthClientErrorMessage(authError, "Login failed. Please try again."));
+      if (authErr) {
+        setError(getAuthClientErrorMessage(authErr, "Login failed. Please try again."));
         return;
       }
 
       globalThis.location.assign("/dashboard");
-    } catch (error) {
-      setError(formatAuthError(error, "Login failed. Please try again."));
+    } catch (authError) {
+      setError(getAuthErrorMessage(authError, "Login failed. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -131,20 +131,20 @@ function LoginRegisterPage() {
     setError("");
     setLoading(true);
     try {
-      const { error: authError } = await authClient.signUp.email({
+      const { error: authErr } = await authClient.signUp.email({
         name: `${values.firstName.trim()} ${values.lastName.trim()}`,
         email: values.email,
         password: values.password,
       });
 
-      if (authError) {
-        setError(getAuthClientErrorMessage(authError, "Registration failed. Please try again."));
+      if (authErr) {
+        setError(getAuthClientErrorMessage(authErr, "Registration failed. Please try again."));
         return;
       }
 
       globalThis.location.assign("/dashboard");
-    } catch (error) {
-      setError(formatAuthError(error, "Registration failed. Please try again."));
+    } catch (authError) {
+      setError(getAuthErrorMessage(authError, "Registration failed. Please try again."));
     } finally {
       setLoading(false);
     }
